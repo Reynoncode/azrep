@@ -1,31 +1,50 @@
 // ==============================
 // AZREP — script.js
+// Firebase Firestore + Storage inteqrasiyası
 // ==============================
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp }          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  addDoc,
+  orderBy,
+  query,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
+// ====================================================
+// 🔥 FIREBASE CONFIG — Firebase Console-dan kopyala
+// ====================================================
 const firebaseConfig = {
-  apiKey: "BURAYA_API_KEY",
-  authDomain: "BURAYA_AUTH_DOMAIN",
-  projectId: "BURAYA_PROJECT_ID",
-  storageBucket: "BURAYA_STORAGE_BUCKET",
+  apiKey:            "BURAYA_API_KEY",
+  authDomain:        "BURAYA.firebaseapp.com",
+  projectId:         "BURAYA_PROJECT_ID",
+  storageBucket:     "BURAYA.appspot.com",
   messagingSenderId: "BURAYA_SENDER_ID",
-  appId: "BURAYA_APP_ID"
+  appId:             "BURAYA_APP_ID"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const app     = initializeApp(firebaseConfig);
+const db      = getFirestore(app);
+const storage = getStorage(app);
 
 // ====================================================
 // STATE
 // ====================================================
-let news = [];
-let currentImages = [];       // array of dataURLs (max 10)
+let news            = [];
+let currentImages   = [];
 let currentVideoFile = null;
 let currentVideoTrim = { start: 0, end: null };
-let activeMediaType = 'image';
-let currentSection = 'home';
+let activeMediaType  = 'image';
+let currentSection   = 'home';
 
 let cropState = {
   img: null,
@@ -51,8 +70,41 @@ document.addEventListener('DOMContentLoaded', () => {
   initMediaTabs();
   initLinkInput();
   initPublish();
-  renderView();
+  loadNews();
 });
+
+// ====================================================
+// 🔥 FIRESTORE — XƏBƏRLƏRİ YÜKLƏ
+// ====================================================
+async function loadNews() {
+  showGridLoading(true);
+  try {
+    const q        = query(collection(db, 'news'), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    news = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (err) {
+    console.error('Xəbərlər yüklənərkən xəta:', err);
+    showGridError(err.message);
+    return;
+  } finally {
+    showGridLoading(false);
+  }
+  renderView();
+}
+
+function showGridLoading(on) {
+  const grid = document.getElementById('newsGrid');
+  if (!grid) return;
+  if (on) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#AAA;letter-spacing:2px;">YÜKLƏNİR…</div>`;
+  }
+}
+
+function showGridError(msg) {
+  const grid = document.getElementById('newsGrid');
+  if (!grid) return;
+  grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#FF3C00;letter-spacing:2px;">XƏTA: ${escHtml(msg)}<br><br>Firebase config-i yoxlayın.</div>`;
+}
 
 // ====================================================
 // DATE
@@ -60,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function setCurrentDate() {
   const el = document.getElementById('current-date');
   if (!el) return;
-  const now = new Date();
+  const now  = new Date();
   const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
   el.textContent = now.toLocaleDateString('az-AZ', opts).toUpperCase();
 }
@@ -84,9 +136,9 @@ function initNav() {
 // RENDER VIEW
 // ====================================================
 function renderView() {
-  const featureSection = document.querySelector('.feature-section');
+  const featureSection  = document.querySelector('.feature-section');
   const newsGridSection = document.querySelector('.news-grid-section');
-  const sectionTag = newsGridSection ? newsGridSection.querySelector('.section-tag') : null;
+  const sectionTag      = newsGridSection ? newsGridSection.querySelector('.section-tag') : null;
 
   if (currentSection === 'news') {
     if (featureSection) featureSection.style.display = 'none';
@@ -130,16 +182,17 @@ function closeNewsModal() {
 }
 
 function resetForm() {
-  document.getElementById('newsTitle').value = '';
-  document.getElementById('newsBody').value = '';
-  document.getElementById('newsLink').value = '';
+  document.getElementById('newsTitle').value    = '';
+  document.getElementById('newsBody').value     = '';
+  document.getElementById('newsLink').value     = '';
   document.getElementById('newsBtnLabel').value = '';
-  document.getElementById('titleCount').textContent = '0/120';
+  document.getElementById('titleCount').textContent    = '0/120';
   document.getElementById('btnLabelCount').textContent = '0/25';
   document.querySelectorAll('.hashtag-input').forEach(i => i.value = '');
   currentImages = [];
   renderImagePreviews();
-  document.getElementById('imageDropLabel').innerHTML = '<span>Şəkillər seçmək üçün klikləyin</span><small>JPG, PNG, WEBP — maks. 10 şəkil</small>';
+  document.getElementById('imageDropLabel').innerHTML =
+    '<span>Şəkillər seçmək üçün klikləyin</span><small>JPG, PNG, WEBP — maks. 10 şəkil</small>';
   const vp = document.querySelector('.video-media-preview');
   if (vp) vp.remove();
   currentVideoFile = null;
@@ -162,10 +215,10 @@ function initMediaTabs() {
 }
 
 // ====================================================
-// IMAGE UPLOAD — max 10 şəkil
+// IMAGE UPLOAD
 // ====================================================
 function initImageUpload() {
-  const zone = document.getElementById('imageDropZone');
+  const zone  = document.getElementById('imageDropZone');
   const input = document.getElementById('imageInput');
   input.setAttribute('multiple', 'true');
   zone.addEventListener('click', () => input.click());
@@ -203,8 +256,8 @@ function initImageUpload() {
 function handleImageFiles(files) {
   const remaining = 10 - currentImages.length;
   if (remaining <= 0) { alert('Maksimum 10 şəkil seçə bilərsiniz!'); return; }
-  const toAdd = Array.from(files).slice(0, remaining);
-  let loaded = 0;
+  const toAdd  = Array.from(files).slice(0, remaining);
+  let loaded   = 0;
   toAdd.forEach(file => {
     const reader = new FileReader();
     reader.onload = e => {
@@ -253,26 +306,21 @@ function renderImagePreviews() {
   });
 }
 
-function openImageEditor(file) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = document.getElementById('cropImage');
-    img.onload = () => initCropBox(img);
-    img.src = e.target.result;
-    document.getElementById('imageEditModal').classList.add('open');
-  };
-  reader.readAsDataURL(file);
-}
-
-function initCropBox(img) {
-  cropState.ratio = 1;
-  document.querySelectorAll('.ratio-btn[data-ratio]').forEach(b => b.classList.remove('active'));
-  document.querySelector('.ratio-btn[data-ratio="1"]').classList.add('active');
-  resetCropBox();
+function applyCrop() {
+  const img    = document.getElementById('cropImage');
+  const scaleX = img.naturalWidth / img.clientWidth, scaleY = img.naturalHeight / img.clientHeight;
+  const canvas = document.createElement('canvas');
+  canvas.width  = cropState.boxW * scaleX; canvas.height = cropState.boxH * scaleY;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, cropState.boxX * scaleX, cropState.boxY * scaleY,
+    cropState.boxW * scaleX, cropState.boxH * scaleY, 0, 0, canvas.width, canvas.height);
+  currentImages.push(canvas.toDataURL('image/jpeg', 0.92));
+  renderImagePreviews();
+  document.getElementById('imageEditModal').classList.remove('open');
 }
 
 function resetCropBox() {
-  const img = document.getElementById('cropImage');
+  const img    = document.getElementById('cropImage');
   const W = img.clientWidth, H = img.clientHeight;
   let bw, bh;
   if (cropState.ratio === 'free') { bw = W * 0.7; bh = H * 0.7; }
@@ -285,22 +333,22 @@ function resetCropBox() {
 
 function applyCropBoxStyle() {
   const box = document.getElementById('cropBox');
-  box.style.left = cropState.boxX + 'px'; box.style.top = cropState.boxY + 'px';
-  box.style.width = cropState.boxW + 'px'; box.style.height = cropState.boxH + 'px';
+  box.style.left   = cropState.boxX + 'px'; box.style.top    = cropState.boxY + 'px';
+  box.style.width  = cropState.boxW + 'px'; box.style.height = cropState.boxH + 'px';
 }
 
 function startCropDrag(e) {
-  cropState.dragging = true;
+  cropState.dragging   = true;
   cropState.dragStartX = e.clientX - cropState.boxX;
   cropState.dragStartY = e.clientY - cropState.boxY;
   e.preventDefault();
 }
 
 function startCropResize(e, handle) {
-  cropState.resizing = true;
-  cropState.handle = handle.className.replace('crop-handle ', '');
+  cropState.resizing   = true;
+  cropState.handle     = handle.className.replace('crop-handle ', '');
   cropState.dragStartX = e.clientX; cropState.dragStartY = e.clientY;
-  cropState._startBox = { ...cropState };
+  cropState._startBox  = { ...cropState };
   e.preventDefault();
 }
 
@@ -333,23 +381,11 @@ function onCropMouseMove(e) {
   }
 }
 
-function applyCrop() {
-  const img = document.getElementById('cropImage');
-  const scaleX = img.naturalWidth / img.clientWidth, scaleY = img.naturalHeight / img.clientHeight;
-  const canvas = document.createElement('canvas');
-  canvas.width = cropState.boxW * scaleX; canvas.height = cropState.boxH * scaleY;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(img, cropState.boxX * scaleX, cropState.boxY * scaleY, cropState.boxW * scaleX, cropState.boxH * scaleY, 0, 0, canvas.width, canvas.height);
-  currentImages.push(canvas.toDataURL('image/jpeg', 0.92));
-  renderImagePreviews();
-  document.getElementById('imageEditModal').classList.remove('open');
-}
-
 // ====================================================
 // VIDEO UPLOAD
 // ====================================================
 function initVideoUpload() {
-  const zone = document.getElementById('videoDropZone');
+  const zone  = document.getElementById('videoDropZone');
   const input = document.getElementById('videoInput');
   zone.addEventListener('click', () => input.click());
   input.addEventListener('change', () => { if (input.files[0]) openVideoEditor(input.files[0]); });
@@ -367,8 +403,8 @@ function initVideoUpload() {
   let vDrag = false, vResize = false, vHandle = null, vSX = 0, vSY = 0, vSB = {};
   let vCrop = { x: 10, y: 10, w: 80, h: 80 };
   function applyVCropStyle() {
-    vBox.style.left = vCrop.x + '%'; vBox.style.top = vCrop.y + '%';
-    vBox.style.width = vCrop.w + '%'; vBox.style.height = vCrop.h + '%';
+    vBox.style.left   = vCrop.x + '%'; vBox.style.top    = vCrop.y + '%';
+    vBox.style.width  = vCrop.w + '%'; vBox.style.height = vCrop.h + '%';
   }
   applyVCropStyle();
   vBox.addEventListener('mousedown', e => { vDrag = true; vSX = e.clientX; vSY = e.clientY; vSB = { ...vCrop }; e.preventDefault(); });
@@ -402,36 +438,36 @@ function initVideoUpload() {
 
 function openVideoEditor(file) {
   currentVideoFile = file;
-  const url = URL.createObjectURL(file);
-  const editVid = document.getElementById('editVideo');
-  const prevVid = document.getElementById('videoCropPreview');
+  const url        = URL.createObjectURL(file);
+  const editVid    = document.getElementById('editVideo');
+  const prevVid    = document.getElementById('videoCropPreview');
   editVid.src = url; prevVid.src = url;
   editVid.onloadedmetadata = () => {
     document.getElementById('trimStart').value = 0;
-    document.getElementById('trimEnd').value = editVid.duration.toFixed(1);
+    document.getElementById('trimEnd').value   = editVid.duration.toFixed(1);
   };
   document.getElementById('videoEditModal').classList.add('open');
 }
 
 function previewTrim() {
-  const vid = document.getElementById('editVideo');
+  const vid   = document.getElementById('editVideo');
   const start = parseFloat(document.getElementById('trimStart').value) || 0;
   vid.currentTime = start; vid.play();
-  const end = parseFloat(document.getElementById('trimEnd').value) || vid.duration;
+  const end   = parseFloat(document.getElementById('trimEnd').value) || vid.duration;
   const stopAt = () => { if (vid.currentTime >= end) { vid.pause(); vid.removeEventListener('timeupdate', stopAt); } };
   vid.addEventListener('timeupdate', stopAt);
 }
 
 function applyVideoEdit() {
   currentVideoTrim.start = parseFloat(document.getElementById('trimStart').value) || 0;
-  currentVideoTrim.end = parseFloat(document.getElementById('trimEnd').value) || null;
+  currentVideoTrim.end   = parseFloat(document.getElementById('trimEnd').value) || null;
   showVideoPreview();
   document.getElementById('videoEditModal').classList.remove('open');
 }
 
 function showVideoPreview() {
-  const zone = document.getElementById('videoDropZone');
-  let preview = zone.parentElement.querySelector('.video-media-preview');
+  const zone    = document.getElementById('videoDropZone');
+  let preview   = zone.parentElement.querySelector('.video-media-preview');
   if (!preview) { preview = document.createElement('div'); preview.className = 'video-media-preview media-preview'; zone.parentElement.appendChild(preview); }
   const url = URL.createObjectURL(currentVideoFile);
   const dur = currentVideoTrim.end ? `${currentVideoTrim.start}s – ${currentVideoTrim.end}s` : 'Tam video';
@@ -453,33 +489,86 @@ function initLinkInput() {
 }
 
 // ====================================================
-// PUBLISH
+// 🔥 PUBLISH — Firestore + Storage
 // ====================================================
 function initPublish() {
   document.getElementById('publishBtn').addEventListener('click', publishNews);
 }
 
-function publishNews() {
+async function publishNews() {
   const title = document.getElementById('newsTitle').value.trim();
   if (!title) { alert('Başlıq boş ola bilməz!'); return; }
-  const body = document.getElementById('newsBody').value.trim();
-  const link = document.getElementById('newsLink').value.trim();
+
+  const publishBtn = document.getElementById('publishBtn');
+  publishBtn.disabled    = true;
+  publishBtn.textContent = 'YÜKLƏNIR…';
+
+  const body     = document.getElementById('newsBody').value.trim();
+  const link     = document.getElementById('newsLink').value.trim();
   const btnLabel = document.getElementById('newsBtnLabel').value.trim() || 'Ətraflı oxu';
-  const tags = [...document.querySelectorAll('.hashtag-input')].map(i => i.value.trim()).filter(Boolean).map(t => t.startsWith('#') ? t : '#' + t);
-  const now = new Date();
-  const dateStr = now.toLocaleString('az-AZ', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase();
-  const item = { id: Date.now(), title, body, link, btnLabel, tags, date: dateStr, media: null, mediaType: null, images: [] };
-  if (activeMediaType === 'image' && currentImages.length > 0) {
-    item.images = [...currentImages];
-    item.media = currentImages[0];
-    item.mediaType = 'image';
-  } else if (activeMediaType === 'video' && currentVideoFile) {
-    item.media = URL.createObjectURL(currentVideoFile);
-    item.mediaType = 'video';
+  const tags     = [...document.querySelectorAll('.hashtag-input')]
+    .map(i => i.value.trim()).filter(Boolean)
+    .map(t => t.startsWith('#') ? t : '#' + t);
+
+  const now     = new Date();
+  const dateStr = now.toLocaleString('az-AZ', {
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  }).toUpperCase();
+
+  let imageUrls = [];
+  let mediaUrl  = null;
+  let mediaType = null;
+
+  try {
+    // ── Şəkilləri Firebase Storage-a yüklə ──
+    if (activeMediaType === 'image' && currentImages.length > 0) {
+      mediaType = 'image';
+      for (let i = 0; i < currentImages.length; i++) {
+        const blob       = await fetch(currentImages[i]).then(r => r.blob());
+        const storageRef = ref(storage, `news/${Date.now()}_${i}.jpg`);
+        await uploadBytes(storageRef, blob);
+        const url = await getDownloadURL(storageRef);
+        imageUrls.push(url);
+      }
+      mediaUrl = imageUrls[0];
+    }
+
+    // ── Videoyu Firebase Storage-a yüklə ──
+    if (activeMediaType === 'video' && currentVideoFile) {
+      mediaType = 'video';
+      const ext        = currentVideoFile.name.split('.').pop();
+      const storageRef = ref(storage, `news/video_${Date.now()}.${ext}`);
+      await uploadBytes(storageRef, currentVideoFile);
+      mediaUrl = await getDownloadURL(storageRef);
+    }
+
+    // ── Firestore-a sənəd əlavə et ──
+    const docData = {
+      title,
+      body,
+      link,
+      btnLabel,
+      tags,
+      date:      dateStr,
+      mediaType: mediaType || null,
+      media:     mediaUrl  || null,
+      images:    imageUrls,
+      createdAt: serverTimestamp()
+    };
+
+    const docRef = await addDoc(collection(db, 'news'), docData);
+    news.unshift({ id: docRef.id, ...docData });
+    renderView();
+    closeNewsModal();
+
+  } catch (err) {
+    console.error('Yayımlanarkən xəta:', err);
+    alert('Xəta baş verdi: ' + err.message);
+  } finally {
+    publishBtn.disabled    = false;
+    publishBtn.textContent = 'YAYIMLA';
   }
-  news.unshift(item);
-  renderView();
-  closeNewsModal();
 }
 
 // ====================================================
@@ -489,13 +578,13 @@ function renderNewsGrid(items) {
   const grid = document.getElementById('newsGrid');
   if (!grid) return;
   if (!items || items.length === 0) {
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#AAA;letter-spacing:2px;">HƏLƏ XƏBƏRƏLƏRİ ƏLAVƏ EDİLMƏYİB</div>`;
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#AAA;letter-spacing:2px;">HƏLƏ XƏBƏRLƏRİ ƏLAVƏ EDİLMƏYİB</div>`;
     return;
   }
   grid.innerHTML = items.map(item => buildNewsCard(item)).join('');
   grid.querySelectorAll('.news-card').forEach(card => {
     card.addEventListener('click', () => {
-      const id = parseInt(card.dataset.id);
+      const id   = card.dataset.id;
       const item = news.find(n => n.id === id);
       if (item) openExpandedCard(item);
     });
@@ -515,9 +604,9 @@ function buildNewsCard(item) {
     topMedia = `<div class="news-card-top-placeholder">NO MEDIA</div>`;
   }
   const hasMultiple = item.images && item.images.length > 1;
-  const tagsHTML = item.tags.slice(0, 3).map(t => `<span class="news-card-tag">${escHtml(t)}</span>`).join('');
-  const linkBtn = item.link ? `<a class="news-card-link-btn" data-href="${escHtml(item.link)}" href="${escHtml(item.link)}" target="_blank" rel="noopener">${escHtml(item.btnLabel)}</a>` : '';
-  const excerpt = item.body.length > 100 ? item.body.slice(0, 100) + '…' : item.body;
+  const tagsHTML    = (item.tags || []).slice(0, 3).map(t => `<span class="news-card-tag">${escHtml(t)}</span>`).join('');
+  const linkBtn     = item.link ? `<a class="news-card-link-btn" data-href="${escHtml(item.link)}" href="${escHtml(item.link)}" target="_blank" rel="noopener">${escHtml(item.btnLabel)}</a>` : '';
+  const excerpt     = (item.body || '').length > 100 ? item.body.slice(0, 100) + '…' : (item.body || '');
   return `
     <article class="news-card" data-id="${item.id}">
       <div class="news-card-top">
@@ -529,7 +618,7 @@ function buildNewsCard(item) {
         <p class="news-card-excerpt">${escHtml(excerpt)}</p>
         <div class="news-card-footer">
           <div style="display:flex;flex-direction:column;gap:4px;">
-            <span class="news-card-meta">${escHtml(item.date)}</span>
+            <span class="news-card-meta">${escHtml(item.date || '')}</span>
             <div class="news-card-tags">${tagsHTML}</div>
           </div>
           ${linkBtn}
@@ -540,7 +629,7 @@ function buildNewsCard(item) {
 }
 
 // ====================================================
-// EXPANDED CARD — tam sətir, X, Instagram slider
+// EXPANDED CARD
 // ====================================================
 function openExpandedCard(item) {
   let overlay = document.getElementById('expandedCardOverlay');
@@ -550,7 +639,9 @@ function openExpandedCard(item) {
     document.body.appendChild(overlay);
   }
 
-  const images = item.images && item.images.length > 0 ? item.images : (item.media && item.mediaType === 'image' ? [item.media] : []);
+  const images = item.images && item.images.length > 0
+    ? item.images
+    : (item.media && item.mediaType === 'image' ? [item.media] : []);
   let mediaHTML = '';
 
   if (images.length > 1) {
@@ -571,17 +662,17 @@ function openExpandedCard(item) {
     mediaHTML = `<div class="exp-media-single"><video src="${item.media}" controls autoplay muted playsinline></video></div>`;
   }
 
-  const tagsHTML = item.tags.map(t => `<span class="exp-tag">${escHtml(t)}</span>`).join('');
-  const linkBtn = item.link ? `<a class="exp-link-btn" href="${escHtml(item.link)}" target="_blank" rel="noopener">${escHtml(item.btnLabel)}</a>` : '';
+  const tagsHTML = (item.tags || []).map(t => `<span class="exp-tag">${escHtml(t)}</span>`).join('');
+  const linkBtn  = item.link ? `<a class="exp-link-btn" href="${escHtml(item.link)}" target="_blank" rel="noopener">${escHtml(item.btnLabel)}</a>` : '';
 
   overlay.innerHTML = `
     <div class="exp-card">
       <button class="exp-close-btn" id="expCloseBtn">✕</button>
       ${mediaHTML}
       <div class="exp-content">
-        <div class="exp-meta">${escHtml(item.date)}</div>
+        <div class="exp-meta">${escHtml(item.date || '')}</div>
         <h2 class="exp-title">${escHtml(item.title)}</h2>
-        <p class="exp-body">${escHtml(item.body)}</p>
+        <p class="exp-body">${escHtml(item.body || '')}</p>
         <div class="exp-footer">
           <div class="exp-tags">${tagsHTML}</div>
           ${linkBtn}
@@ -591,19 +682,17 @@ function openExpandedCard(item) {
   `;
 
   overlay.classList.add('open');
-
   document.getElementById('expCloseBtn').addEventListener('click', () => overlay.classList.remove('open'));
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
-
-  // ESC klavişi ilə bağla
-  const escHandler = e => { if (e.key === 'Escape') { overlay.classList.remove('open'); document.removeEventListener('keydown', escHandler); } };
+  const escHandler = e => {
+    if (e.key === 'Escape') { overlay.classList.remove('open'); document.removeEventListener('keydown', escHandler); }
+  };
   document.addEventListener('keydown', escHandler);
 
-  // Slider
   if (images.length > 1) {
-    let cur = 0;
+    let cur   = 0;
     const track = document.getElementById('expSliderTrack');
-    const dots = overlay.querySelectorAll('.exp-dot');
+    const dots  = overlay.querySelectorAll('.exp-dot');
     function goTo(idx) {
       cur = Math.max(0, Math.min(idx, images.length - 1));
       track.style.transform = `translateX(-${cur * 100}%)`;
@@ -614,7 +703,7 @@ function openExpandedCard(item) {
     dots.forEach(dot => dot.addEventListener('click', () => goTo(parseInt(dot.dataset.idx))));
     let tx = 0;
     track.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
-    track.addEventListener('touchend', e => {
+    track.addEventListener('touchend',   e => {
       const dx = e.changedTouches[0].clientX - tx;
       if (Math.abs(dx) > 40) goTo(dx < 0 ? cur + 1 : cur - 1);
     }, { passive: true });
@@ -625,5 +714,9 @@ function openExpandedCard(item) {
 // UTILS
 // ====================================================
 function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(str)
+    .replace(/&/g,  '&amp;')
+    .replace(/</g,  '&lt;')
+    .replace(/>/g,  '&gt;')
+    .replace(/"/g,  '&quot;');
 }

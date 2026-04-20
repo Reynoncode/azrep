@@ -15,83 +15,95 @@
   <div class="ticker">
     <div class="ticker-track">
       <span>DRAKE YENİ ALBOM BURAXDI — "CERTIFIED LOVER BOY 2" // KENDRİCK LAMAR KONSERT TURA ÇIXIR // AZ HİPHOP: BAKU RAP FEST 2026 TARİXİ AÇIQLANDI // TRAVIS SCOTT YENİ KOLLABORASIYA İLƏ QAYIDIR // METRO BOOMİN YENİ ALBOM ELAN ETDİ //</span>
+      <span>DRAKE YENİ ALBOM BURAXDI — "CERTIFIED LOVER BOY 2" // KENDRİCK LAMAR KONSERT TURA ÇIXIR // AZ HİPHOP: BAKU RAP FEST 2026 TARİXİ AÇIQLANDI // TRAVIS SCOTT YENİ KOLLABORASIYA İLƏ QAYIDIR // METRO BOOMİN YENİ ALBOM ELAN ETDİ //</span>
     </div>
   </div>
 
   <!-- HEADER -->
   <header class="site-header">
-    <div class="logo">AZ<em>REP</em></div>
-    <div class="header-meta">
-      <span class="header-date" id="currentDate"></span>
-      <span class="header-tag">// AZƏRBAYCANIN RAP XƏBƏRİ</span>
+    <div class="header-inner">
+      <div class="logo">AZ<em>REP</em></div>
+      <div class="header-meta">
+        <span class="header-date" id="current-date"></span>
+        <span class="header-tagline">// AZƏRBAYCANIN RAP XƏBƏRİ</span>
+      </div>
     </div>
   </header>
 
   <!-- NAV -->
-  <nav class="site-nav">
-    <a href="#" class="active">Ana Səhifə</a>
-    <a href="#">Xəbərlər</a>
-    <a href="#">Albomlar</a>
-    <a href="#">İnterviyu</a>
-    <a href="#">Az Rap</a>
-    <a href="#">Dünya</a>
+  <nav class="main-nav">
+    <div class="nav-inner">
+      <a href="#" class="nav-link active" data-section="home">Ana Səhifə</a>
+      <a href="#" class="nav-link" data-section="news">Xəbərlər</a>
+      <a href="#" class="nav-link" data-section="albums">Albomlar</a>
+      <a href="#" class="nav-link" data-section="interview">İnterviyu</a>
+      <a href="#" class="nav-link" data-section="azrap">Az Rap</a>
+      <a href="#" class="nav-link" data-section="world">Dünya</a>
+    </div>
   </nav>
 
   <!-- MAIN -->
-  <main>
+  <main class="site-main">
 
-    <!-- FEATURED -->
-    <section class="feature-grid">
+    <!-- FEATURE -->
+    <section class="feature-section">
       <div class="feature-main">
         <div class="section-tag">SON XƏBƏR</div>
         <h1 class="feature-title">Kendrick Lamar Qrammini Aldıqdan Sonra Yeni Trek Buraxdı</h1>
-        <p class="feature-lead">Grammy gecəsindən cəmi 48 saat sonra "Not Like Us" müəllifi gözlənilmədən yeni studiya materialı ilə pərdəarxasını paylaşdı. Fanatlar sosial mediada alovlandı.</p>
-        <div class="article-meta">20 APR 2026 &nbsp;// &nbsp;MUSİQİ &nbsp;// &nbsp;3 DƏQ OXU</div>
+        <p class="feature-lead">Grammy gecəsindən cəmi 48 saat sonra "Not Like Us" müəllifi gözlənilmədən yeni studiya materialı ilə pərdəarxasını paylaşdı.</p>
+        <div class="feature-meta">
+          <span>20 APR 2026</span>
+          <span>//</span>
+          <span>MUSİQİ</span>
+          <span>//</span>
+          <span>3 DƏQ OXU</span>
+        </div>
       </div>
+
       <aside class="feature-sidebar">
-        <div class="side-item">
-          <span class="side-num">01</span>
-          <div>
-            <div class="side-cat">Az Rap</div>
-            <div class="side-title">Baku Rap Fest 2026 Lineup Açıqlandı</div>
+        <div class="sidebar-item">
+          <span class="sidebar-num">01</span>
+          <div class="sidebar-body">
+            <div class="sidebar-cat">Az Rap</div>
+            <div class="sidebar-title">Baku Rap Fest 2026 Lineup Açıqlandı</div>
           </div>
         </div>
-        <div class="side-item">
-          <span class="side-num">02</span>
-          <div>
-            <div class="side-cat">Albom</div>
-            <div class="side-title">Tyler The Creator "Chromakopia" Turuna Çıxır</div>
+        <div class="sidebar-item">
+          <span class="sidebar-num">02</span>
+          <div class="sidebar-body">
+            <div class="sidebar-cat">Albom</div>
+            <div class="sidebar-title">Tyler The Creator "Chromakopia" Turuna Çıxır</div>
           </div>
         </div>
-        <div class="side-item">
-          <span class="side-num">03</span>
-          <div>
-            <div class="side-cat">Dünya</div>
-            <div class="side-title">UK Drill Sənətçisi Azərbaycanda Konsert Verəcək</div>
+        <div class="sidebar-item">
+          <span class="sidebar-num">03</span>
+          <div class="sidebar-body">
+            <div class="sidebar-cat">Dünya</div>
+            <div class="sidebar-title">UK Drill Sənətçisi Azərbaycanda Konsert Verəcək</div>
           </div>
         </div>
       </aside>
     </section>
 
     <!-- CARDS -->
-    <section class="cards-grid">
+    <section class="cards-section">
       <article class="card">
         <div class="card-cat drama">// Dram</div>
         <h2 class="card-title">Drake vs. Pusha T — Yeni Raund Başlıyor?</h2>
         <p class="card-desc">Sosial mediadakı işarələr yeni müharibənin siqnalı kimi oxunur.</p>
-        <div class="article-meta">19 APR 2026</div>
+        <span class="card-date">19 APR 2026</span>
       </article>
       <article class="card">
         <div class="card-cat music">// Musiqi</div>
         <h2 class="card-title">Metro Boomin Yeni Prodüser Albomunun Tarixi Açıqlandı</h2>
         <p class="card-desc">Beat arxitektoru 2026-nın ən gözlənilən layihəsini elan etdi.</p>
-        <div class="article-meta">18 APR 2026</div>
+        <span class="card-date">18 APR 2026</span>
       </article>
       <article class="card">
         <div class="card-cat style">// Stil</div>
         <h2 class="card-title">Carti'nin Yeni Görünüşü Streetwear Dünyanı Qarışdırdı</h2>
         <p class="card-desc">Playboi Carti Coachella'da geyindikləri anında trenddə oldu.</p>
-        <div class="article-meta">17 APR 2026</div>
+        <span class="card-date">17 APR 2026</span>
       </article>
     </section>
 
@@ -99,8 +111,10 @@
 
   <!-- FOOTER -->
   <footer class="site-footer">
-    <div class="footer-logo">AZ<em>REP</em></div>
-    <div class="footer-copy">© 2026 AZREP // BÜTÜN HÜQUQLAR QORUNUR</div>
+    <div class="footer-inner">
+      <div class="footer-logo">AZ<em>REP</em></div>
+      <div class="footer-copy">© 2026 AZREP // BÜTÜN HÜQUQLAR QORUNUR</div>
+    </div>
   </footer>
 
   <script src="script.js"></script>

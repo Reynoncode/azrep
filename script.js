@@ -4,6 +4,7 @@
 // ==============================
 
 import { initializeApp }          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAnalytics }           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
 import {
   getFirestore,
   collection,
@@ -33,8 +34,10 @@ const firebaseConfig = {
     measurementId: "G-09GGXC0499"
   };
 
-const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
+const app       = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db        = getFirestore(app);
+const storage   = getStorage(app);
 // ====================================================
 // STATE
 // ====================================================

@@ -24,18 +24,17 @@ import {
 // 🔥 FIREBASE CONFIG — Firebase Console-dan kopyala
 // ====================================================
 const firebaseConfig = {
-  apiKey:            "BURAYA_API_KEY",
-  authDomain:        "BURAYA.firebaseapp.com",
-  projectId:         "BURAYA_PROJECT_ID",
-  storageBucket:     "BURAYA.appspot.com",
-  messagingSenderId: "BURAYA_SENDER_ID",
-  appId:             "BURAYA_APP_ID"
-};
+    apiKey: "AIzaSyDzCQsF10gofC5sdwIXK2wlX0QKRxY4vE4",
+    authDomain: "hiprhyme-2587e.firebaseapp.com",
+    projectId: "hiprhyme-2587e",
+    storageBucket: "hiprhyme-2587e.firebasestorage.app",
+    messagingSenderId: "401645996625",
+    appId: "1:401645996625:web:a168b32f7121b9fb95c670",
+    measurementId: "G-09GGXC0499"
+  };
 
-const app     = initializeApp(firebaseConfig);
-const db      = getFirestore(app);
-const storage = getStorage(app);
-
+const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
 // ====================================================
 // STATE
 // ====================================================

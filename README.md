@@ -1,2 +1,0 @@
-# azrep
-Azərbaycan xəbər saytı

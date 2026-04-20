@@ -4,12 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AZREP — Azərbaycanın Rap Xəbəri</title>
-
-  <!-- Google Fonts: Oswald (AZ hərfləri dəstəklənir) + IBM Plex Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet" />
-
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -26,9 +23,12 @@
   <header class="site-header">
     <div class="header-inner">
       <div class="logo">AZ<em>REP</em></div>
-      <div class="header-meta">
-        <span class="header-date" id="current-date"></span>
-        <span class="header-tagline">// AZƏRBAYCANIN RAP XƏBƏRİ</span>
+      <div class="header-right">
+        <div class="header-meta">
+          <span class="header-date" id="current-date"></span>
+          <span class="header-tagline">// AZƏRBAYCANIN RAP XƏBƏRİ</span>
+        </div>
+        <button class="add-news-btn" id="openModalBtn">+ XƏBƏRƏLƏRİ ƏLAVƏ ET</button>
       </div>
     </div>
   </header>
@@ -62,7 +62,6 @@
           <span>3 DƏQ OXU</span>
         </div>
       </div>
-
       <aside class="feature-sidebar">
         <div class="sidebar-item">
           <span class="sidebar-num">01</span>
@@ -88,26 +87,14 @@
       </aside>
     </section>
 
-    <!-- CARDS -->
-    <section class="cards-section">
-      <article class="card">
-        <div class="card-cat drama">// Dram</div>
-        <h2 class="card-title">Drake vs. Pusha T — Yeni Raund Başlıyor?</h2>
-        <p class="card-desc">Sosial mediadakı işarələr yeni müharibənin siqnalı kimi oxunur.</p>
-        <span class="card-date">19 APR 2026</span>
-      </article>
-      <article class="card">
-        <div class="card-cat music">// Musiqi</div>
-        <h2 class="card-title">Metro Boomin Yeni Prodüser Albomunun Tarixi Açıqlandı</h2>
-        <p class="card-desc">Beat arxitektoru 2026-nın ən gözlənilən layihəsini elan etdi.</p>
-        <span class="card-date">18 APR 2026</span>
-      </article>
-      <article class="card">
-        <div class="card-cat style">// Stil</div>
-        <h2 class="card-title">Carti'nin Yeni Görünüşü Streetwear Dünyanı Qarışdırdı</h2>
-        <p class="card-desc">Playboi Carti Coachella'da geyindikləri anında trenddə oldu.</p>
-        <span class="card-date">17 APR 2026</span>
-      </article>
+    <!-- NEWS GRID -->
+    <section class="news-grid-section">
+      <div class="section-header">
+        <div class="section-tag">SON XƏBƏRLƏR</div>
+      </div>
+      <div class="news-grid" id="newsGrid">
+        <!-- Xəbərlər JS ilə buraya əlavə olunur -->
+      </div>
     </section>
 
   </main>
@@ -120,7 +107,191 @@
     </div>
   </footer>
 
-  <!-- FIREBASE SDK -->
+  <!-- ===================== XƏBƏRƏLƏRİ ƏLAVƏ ET MODAL ===================== -->
+  <div class="modal-overlay" id="newsModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">YENİ XƏBƏR</span>
+        <button class="modal-close" id="closeModalBtn">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Başlıq -->
+        <div class="form-group">
+          <label class="form-label">BAŞLIQ</label>
+          <input type="text" id="newsTitle" class="form-input" placeholder="Xəbərin başlığı..." maxlength="120" />
+          <span class="char-count" id="titleCount">0/120</span>
+        </div>
+
+        <!-- Xəbərin mətni -->
+        <div class="form-group">
+          <label class="form-label">XƏBƏRİN MƏTNİ</label>
+          <textarea id="newsBody" class="form-textarea" placeholder="Xəbəri buraya yazın..."></textarea>
+        </div>
+
+        <!-- Hashtag -->
+        <div class="form-group">
+          <label class="form-label">HASHTAGLAR (maks. 3)</label>
+          <div class="hashtag-inputs">
+            <input type="text" class="form-input hashtag-input" placeholder="#azrap" maxlength="30" />
+            <input type="text" class="form-input hashtag-input" placeholder="#musiqi" maxlength="30" />
+            <input type="text" class="form-input hashtag-input" placeholder="#xeber" maxlength="30" />
+          </div>
+        </div>
+
+        <!-- Şəkil / Video seçimi -->
+        <div class="form-group">
+          <label class="form-label">MEDIA</label>
+          <div class="media-tabs">
+            <button class="media-tab active" data-tab="image">🖼 Şəkil</button>
+            <button class="media-tab" data-tab="video">🎬 Video</button>
+          </div>
+
+          <!-- Şəkil panel -->
+          <div class="media-panel active" id="imagePanel">
+            <div class="file-drop-zone" id="imageDropZone">
+              <input type="file" id="imageInput" accept="image/*" hidden />
+              <div class="drop-label" id="imageDropLabel">
+                <span>Şəkil seçmək üçün klikləyin</span>
+                <small>JPG, PNG, WEBP</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video panel -->
+          <div class="media-panel" id="videoPanel">
+            <div class="file-drop-zone" id="videoDropZone">
+              <input type="file" id="videoInput" accept="video/*" hidden />
+              <div class="drop-label" id="videoDropLabel">
+                <span>Video seçmək üçün klikləyin</span>
+                <small>MP4, MOV, WEBM</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Keçid linki -->
+        <div class="form-group">
+          <label class="form-label">KEÇİD LİNKİ (istəyə bağlı)</label>
+          <input type="url" id="newsLink" class="form-input" placeholder="https://..." />
+        </div>
+
+        <!-- Button yazısı -->
+        <div class="form-group" id="btnLabelGroup" style="display:none">
+          <label class="form-label">BUTTON YAZISI <small>(maks. 25 hərf)</small></label>
+          <input type="text" id="newsBtnLabel" class="form-input" placeholder="Ətraflı oxu" maxlength="25" />
+          <span class="char-count" id="btnLabelCount">0/25</span>
+        </div>
+
+        <!-- Yayımla button -->
+        <button class="publish-btn" id="publishBtn">YAYIMLA</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== ŞƏKİL EDIT MODAL ===================== -->
+  <div class="modal-overlay" id="imageEditModal">
+    <div class="modal-box modal-box--wide">
+      <div class="modal-header">
+        <span class="modal-title">ŞƏKİL EDİT</span>
+        <button class="modal-close" id="closeImageEditBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="crop-area-wrapper">
+          <div class="crop-container" id="cropContainer">
+            <img id="cropImage" src="" alt="crop" draggable="false" />
+            <div class="crop-overlay" id="cropOverlay">
+              <div class="crop-box" id="cropBox">
+                <div class="crop-handle tl"></div>
+                <div class="crop-handle tr"></div>
+                <div class="crop-handle bl"></div>
+                <div class="crop-handle br"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="edit-controls">
+          <div class="edit-control-group">
+            <label>Ölçü nisbəti</label>
+            <div class="ratio-btns">
+              <button class="ratio-btn active" data-ratio="1">1:1</button>
+              <button class="ratio-btn" data-ratio="1.7778">16:9</button>
+              <button class="ratio-btn" data-ratio="0.5625">9:16</button>
+              <button class="ratio-btn" data-ratio="free">Sərbəst</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="action-btn secondary" id="cancelCropBtn">Ləğv et</button>
+          <button class="action-btn primary" id="applyCropBtn">Tətbiq et</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== VİDEO EDIT MODAL ===================== -->
+  <div class="modal-overlay" id="videoEditModal">
+    <div class="modal-box modal-box--wide">
+      <div class="modal-header">
+        <span class="modal-title">VİDEO EDİT</span>
+        <button class="modal-close" id="closeVideoEditBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="video-edit-layout">
+          <!-- Sol: video preview -->
+          <div class="video-preview-col">
+            <video id="editVideo" controls style="width:100%;border-radius:4px;background:#000;"></video>
+            <div class="video-crop-frame-wrapper">
+              <div class="video-crop-container" id="videoCropContainer">
+                <video id="videoCropPreview" muted style="width:100%;display:block;"></video>
+                <div class="crop-overlay" id="videoCropOverlay">
+                  <div class="crop-box" id="videoCropBox">
+                    <div class="crop-handle tl"></div>
+                    <div class="crop-handle tr"></div>
+                    <div class="crop-handle bl"></div>
+                    <div class="crop-handle br"></div>
+                  </div>
+                </div>
+              </div>
+              <p class="crop-note">Video çərçivəsini crop edin</p>
+            </div>
+          </div>
+
+          <!-- Sağ: müddət seçimi -->
+          <div class="video-trim-col">
+            <div class="edit-control-group">
+              <label>Müddət seçimi (saniyə)</label>
+              <div class="trim-row">
+                <div>
+                  <span>Başlanğıc</span>
+                  <input type="number" id="trimStart" class="form-input trim-input" value="0" min="0" step="0.1" />
+                </div>
+                <div>
+                  <span>Son</span>
+                  <input type="number" id="trimEnd" class="form-input trim-input" value="0" min="0" step="0.1" />
+                </div>
+              </div>
+              <button class="action-btn secondary" id="previewTrimBtn" style="margin-top:8px;width:100%">▶ Bax</button>
+            </div>
+            <div class="edit-control-group" style="margin-top:16px">
+              <label>Crop nisbəti</label>
+              <div class="ratio-btns">
+                <button class="ratio-btn active" data-vratio="1">1:1</button>
+                <button class="ratio-btn" data-vratio="1.7778">16:9</button>
+                <button class="ratio-btn" data-vratio="free">Sərbəst</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="action-btn secondary" id="cancelVideoEditBtn">Ləğv et</button>
+          <button class="action-btn primary" id="applyVideoEditBtn">Tətbiq et</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="script.js"></script>
 </body>
 </html>

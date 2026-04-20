@@ -14,12 +14,6 @@ import {
   query,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import {
-  getStorage,
-  ref,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 // ====================================================
 // 🔥 FIREBASE CONFIG — Firebase Console-dan kopyala
@@ -37,7 +31,6 @@ const firebaseConfig = {
 const app       = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db        = getFirestore(app);
-const storage   = getStorage(app);
 // ====================================================
 // STATE
 // ====================================================
@@ -523,26 +516,20 @@ async function publishNews() {
   let mediaType = null;
 
   try {
-    // ── Şəkilləri Firebase Storage-a yüklə ──
+    // ── Şəkilləri sıxışdır və Base64 kimi saxla (Storage yoxdur) ──
     if (activeMediaType === 'image' && currentImages.length > 0) {
       mediaType = 'image';
       for (let i = 0; i < currentImages.length; i++) {
-        const blob       = await fetch(currentImages[i]).then(r => r.blob());
-        const storageRef = ref(storage, `news/${Date.now()}_${i}.jpg`);
-        await uploadBytes(storageRef, blob);
-        const url = await getDownloadURL(storageRef);
-        imageUrls.push(url);
+        const compressed = await compressImage(currentImages[i], 800, 0.75);
+        imageUrls.push(compressed);
       }
       mediaUrl = imageUrls[0];
     }
 
-    // ── Videoyu Firebase Storage-a yüklə ──
+    // ── Videoyu Base64 kimi saxla ──
     if (activeMediaType === 'video' && currentVideoFile) {
       mediaType = 'video';
-      const ext        = currentVideoFile.name.split('.').pop();
-      const storageRef = ref(storage, `news/video_${Date.now()}.${ext}`);
-      await uploadBytes(storageRef, currentVideoFile);
-      mediaUrl = await getDownloadURL(storageRef);
+      mediaUrl  = await fileToBase64(currentVideoFile);
     }
 
     // ── Firestore-a sənəd əlavə et ──
@@ -721,4 +708,31 @@ function escHtml(str) {
     .replace(/</g,  '&lt;')
     .replace(/>/g,  '&gt;')
     .replace(/"/g,  '&quot;');
+}
+
+// ====================================================
+// 🔧 UTILS — Şəkil sıxışdırma + Base64
+// ====================================================
+function compressImage(base64, maxWidth, quality) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const scale  = Math.min(1, maxWidth / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width  = img.width  * scale;
+      canvas.height = img.height * scale;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = base64;
+  });
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }

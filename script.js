@@ -2,6 +2,29 @@
 // AZREP — script.js
 // ==============================
 
+// --- FIREBASE KONFIQURASIYA ---
+// Firebase consoldan öz konfiqurasiyani buraya yapışdır:
+// https://console.firebase.google.com → Layihən → Project Settings → Your apps
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "BURAYA_API_KEY",
+  authDomain: "BURAYA_AUTH_DOMAIN",
+  projectId: "BURAYA_PROJECT_ID",
+  storageBucket: "BURAYA_STORAGE_BUCKET",
+  messagingSenderId: "BURAYA_SENDER_ID",
+  appId: "BURAYA_APP_ID"
+};
+
+// Firebase-i başlat
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// DB-ni digər funksiyalarda istifadə etmək üçün export
+export { db, collection, getDocs, addDoc, orderBy, query };
+
 // --- TARİX GÖSTƏRİCİSİ ---
 function setCurrentDate() {
   const el = document.getElementById('current-date');
@@ -26,13 +49,13 @@ function initNav() {
   });
 }
 
-// --- KART HOVER EFFEKTİ ---
+// --- KART KLİK ---
 function initCards() {
   const cards = document.querySelectorAll('.card, .sidebar-item');
 
   cards.forEach(card => {
     card.addEventListener('click', function () {
-      // Firebase ilə xəbər səhifəsinə yönləndirmə buraya əlavə olunacaq
+      // İstəyə görə Firestore-dan xəbər yüklənəcək
       console.log('Xəbər açılır...');
     });
   });
@@ -52,21 +75,18 @@ function initTicker() {
   });
 }
 
-// --- FIREBASE HAZIRLIĞI (sonra doldurulacaq) ---
-// Firebase konfiqurasiyası əlavə olunanda buraya yapışdırın:
-//
-// import { initializeApp } from "firebase/app";
-// import { getFirestore } from "firebase/firestore";
-//
-// const firebaseConfig = {
-//   apiKey: "...",
-//   authDomain: "...",
-//   projectId: "...",
-//   ...
-// };
-//
-// const app = initializeApp(firebaseConfig);
-// const db = getFirestore(app);
+// --- FIRESTORE: XƏBƏRLƏRİ YÜKLƏ (nümunə) ---
+// async function loadNews() {
+//   try {
+//     const q = query(collection(db, "news"), orderBy("date", "desc"));
+//     const snapshot = await getDocs(q);
+//     snapshot.forEach(doc => {
+//       console.log(doc.id, doc.data());
+//     });
+//   } catch (err) {
+//     console.error("Xəbərlər yüklənmədi:", err);
+//   }
+// }
 
 // --- BAŞLAT ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -74,4 +94,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initNav();
   initCards();
   initTicker();
+  // loadNews(); // Firebase hazır olduqda bu sətrin şərhini sil
 });

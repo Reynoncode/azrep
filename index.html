@@ -6,29 +6,22 @@
   <title>AZREP — Azərbaycanın Rap Xəbəri</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;700&family=Permanent+Marker&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <!-- TICKER -->
-  <div class="ticker">
-    <div class="ticker-track">
-      <span>əməkdaşlıq üçün əlaqə</span>
-      <span></span>
-    </div>
-  </div>
 
   <!-- HEADER -->
   <header class="site-header">
     <div class="header-inner">
       <div class="logo">HIP<em>RHYME</em></div>
       <div class="header-right">
-        <div class="header-meta">
-          <span class="header-date" id="current-date"></span>
-          <span class="header-tagline">Hiphop, Rep və Daha Çoxu</span>
-        </div>
         <button class="add-news-btn" id="openModalBtn">+ XƏBƏR ƏLAVƏ ET</button>
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menyu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
     </div>
   </header>
@@ -290,6 +283,24 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- SIDE DRAWER -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <div class="side-drawer" id="sideDrawer">
+    <div class="drawer-header">
+      <div class="drawer-logo">HIP<em>RHYME</em></div>
+      <button class="drawer-close" id="drawerClose">✕</button>
+    </div>
+    <nav class="drawer-nav">
+      <a href="#" class="drawer-link" data-section="home">Ana Səhifə</a>
+      <a href="#" class="drawer-link" data-section="news">Xəbərlər</a>
+      <a href="#" class="drawer-link" data-section="albums">Relizlər</a>
+      <a href="#" class="drawer-link" data-section="interview">Podcastlar</a>
+      <a href="#" class="drawer-link" data-section="azrap">Sənətçilər</a>
+      <a href="#" class="drawer-link" data-section="world">Əlaqə</a>
+    </nav>
+    <div class="drawer-footer">Hiphop, Rep və Daha Çoxu</div>
   </div>
 
   <script type="module" src="script.js"></script>

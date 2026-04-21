@@ -140,11 +140,12 @@ function renderView() {
   if (currentSection === 'news') {
     if (featureSection) featureSection.style.display = 'none';
     if (sectionTag) sectionTag.textContent = 'BÜTÜN XƏBƏRLƏR';
+    renderNewsGrid(news); // hamısı
   } else {
     if (featureSection) featureSection.style.display = '';
     if (sectionTag) sectionTag.textContent = 'SON XƏBƏRLƏR';
+    renderNewsGrid(news.slice(0, 4)); // ana səhifədə max 4
   }
-  renderNewsGrid(news);
 }
 
 // ====================================================
@@ -657,21 +658,26 @@ function getGridColumns(grid) {
   return cols || 4;
 }
 
+function closeExpandedRow(row, card) {
+  row.classList.remove('open');
+  if (card) card.classList.remove('is-open');
+  // Animasiya bitəndən sonra sil
+  setTimeout(() => { if (row.parentNode) row.remove(); }, 460);
+}
+
 function toggleExpandedRow(card, item, grid) {
   const existingRow = grid.querySelector('.news-expanded-row.open');
 
   // Əgər bu kartın öz row-u açıqdırsa — bağla
   if (existingRow && existingRow.dataset.forId === item.id) {
-    existingRow.remove();
-    card.classList.remove('is-open');
+    closeExpandedRow(existingRow, card);
     return;
   }
 
   // Hər hansı açıq row-u bağla
   if (existingRow) {
     const prevCard = grid.querySelector(`.news-card[data-id="${existingRow.dataset.forId}"]`);
-    if (prevCard) prevCard.classList.remove('is-open');
-    existingRow.remove();
+    closeExpandedRow(existingRow, prevCard);
   }
 
   // Yeni expanded row yarat
@@ -689,23 +695,28 @@ function toggleExpandedRow(card, item, grid) {
   const rowLastCard = cards[rowLastIdx];
   rowLastCard.insertAdjacentElement('afterend', row);
 
+  // DOM-a əlavə edildikdən sonra bir frame keçir, sonra open class əlavə et (animasiya üçün)
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      row.classList.add('open');
+    });
+  });
+
   // Expanded row-a scroll et
   setTimeout(() => {
     row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, 60);
+  }, 80);
 
   // Bağla düyməsi
   row.querySelector('.exp-close-row-btn').addEventListener('click', e => {
     e.stopPropagation();
-    card.classList.remove('is-open');
-    row.remove();
+    closeExpandedRow(row, card);
   });
 
   // Escape ilə bağla
   const escHandler = e => {
     if (e.key === 'Escape') {
-      card.classList.remove('is-open');
-      row.remove();
+      closeExpandedRow(row, card);
       document.removeEventListener('keydown', escHandler);
     }
   };
@@ -746,7 +757,7 @@ function buildExpandedRow(item) {
   const linkBtn  = item.link ? `<a class="exp-link-btn" href="${escHtml(item.link)}" target="_blank" rel="noopener">${escHtml(item.btnLabel || 'Ətraflı')}</a>` : '';
 
   const row = document.createElement('div');
-  row.className = 'news-expanded-row open';
+  row.className = 'news-expanded-row';
   row.dataset.forId = item.id;
   row.innerHTML = `
     <div class="exp-row-inner">

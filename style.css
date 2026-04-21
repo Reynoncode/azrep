@@ -147,7 +147,7 @@ a { text-decoration: none; color: inherit; }
 }
 .news-card-title-overlay h3 {
   font-family: 'Inter', sans-serif;
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 700;
   color: #fff;
   text-transform: uppercase;
@@ -446,15 +446,8 @@ a { text-decoration: none; color: inherit; }
 }
 
 /* ====================================================
-   NEWS CARD — tam sətir açılma (expanded) overlay
+   NEWS CARD — inline genişlənmə (expanded row)
    ==================================================== */
-
-/* Kartın grid-i tam sətir tutan layout */
-.news-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
 
 /* Çoxlu şəkil badge */
 .news-card-multi-badge {
@@ -471,37 +464,34 @@ a { text-decoration: none; color: inherit; }
   z-index: 2;
 }
 
-/* ---- EXPANDED CARD OVERLAY ---- */
-#expandedCardOverlay {
+/* Kartın açıq halı */
+.news-card.is-open {
+  border-color: #FF3C00;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ---- INLINE EXPANDED ROW ---- */
+.news-expanded-row {
   display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.75);
-  z-index: 2000;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 24px 16px;
-  overflow-y: auto;
-}
-#expandedCardOverlay.open {
-  display: flex;
-}
-
-.exp-card {
-  position: relative;
-  width: 100%;
-  max-width: 1160px;
+  grid-column: 1 / -1;
   background: #FAF9F6;
-  border: 2px solid #0D0D0D;
-  display: flex;
-  flex-direction: column;
-  margin: auto;
+  border: 2px solid #FF3C00;
+  border-top: none;
+  animation: expandIn 0.25s ease;
+}
+.news-expanded-row.open {
+  display: block;
+}
+@keyframes expandIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* X düyməsi */
-.exp-close-btn {
+/* Kapatma düyməsi */
+.exp-close-row-btn {
   position: absolute;
-  top: 12px;
+  top: 14px;
   right: 14px;
   width: 36px;
   height: 36px;
@@ -517,19 +507,26 @@ a { text-decoration: none; color: inherit; }
   line-height: 1;
   transition: background 0.15s;
 }
-.exp-close-btn:hover { background: #FF3C00; }
+.exp-close-row-btn:hover { background: #FF3C00; }
 
-/* Tək media */
+/* Expanded row içi */
+.exp-row-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Media bölümü */
 .exp-media-single {
   width: 100%;
-  max-height: 520px;
+  max-height: 560px;
   overflow: hidden;
   background: #111;
 }
 .exp-media-single img,
 .exp-media-single video {
   width: 100%;
-  max-height: 520px;
+  max-height: 560px;
   object-fit: cover;
   display: block;
 }
@@ -540,7 +537,7 @@ a { text-decoration: none; color: inherit; }
   width: 100%;
   overflow: hidden;
   background: #111;
-  max-height: 520px;
+  max-height: 560px;
 }
 .exp-slider-track {
   display: flex;
@@ -549,7 +546,7 @@ a { text-decoration: none; color: inherit; }
 }
 .exp-slide {
   min-width: 100%;
-  max-height: 520px;
+  max-height: 560px;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -558,7 +555,7 @@ a { text-decoration: none; color: inherit; }
 }
 .exp-slide img {
   width: 100%;
-  max-height: 520px;
+  max-height: 560px;
   object-fit: cover;
   display: block;
 }
@@ -569,9 +566,9 @@ a { text-decoration: none; color: inherit; }
   background: rgba(0,0,0,0.55);
   color: #fff;
   border: none;
-  width: 40px;
-  height: 56px;
-  font-size: 28px;
+  width: 48px;
+  height: 64px;
+  font-size: 32px;
   cursor: pointer;
   z-index: 5;
   display: flex;
@@ -604,7 +601,7 @@ a { text-decoration: none; color: inherit; }
   transform: scale(1.3);
 }
 
-/* Expanded kart məzmunu */
+/* Expanded məzmun */
 .exp-content {
   padding: 28px 36px 32px;
   display: flex;
@@ -612,26 +609,27 @@ a { text-decoration: none; color: inherit; }
   gap: 14px;
 }
 .exp-meta {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
   color: #AAA;
   letter-spacing: 1.5px;
   text-transform: uppercase;
 }
 .exp-title {
   font-family: 'Oswald', sans-serif;
-  font-size: 38px;
+  font-size: 42px;
   font-weight: 700;
   color: #0D0D0D;
   text-transform: uppercase;
   line-height: 1.1;
 }
 .exp-body {
-  font-family: 'Oswald', sans-serif;
-  font-size: 16px;
-  font-weight: 300;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
   color: #333;
-  line-height: 1.7;
+  line-height: 1.75;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -646,8 +644,9 @@ a { text-decoration: none; color: inherit; }
 }
 .exp-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .exp-tag {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
   color: #FF3C00;
   background: rgba(255,60,0,0.08);
   padding: 3px 8px;
@@ -669,7 +668,17 @@ a { text-decoration: none; color: inherit; }
 }
 .exp-link-btn:hover { background: #cc3000; }
 
-/* ---- IMAGE PREVIEW GRİD (form içi) ---- */
+/* Responsive */
+@media (max-width: 768px) {
+  .exp-content { padding: 18px 16px 22px; }
+  .exp-title { font-size: 26px; }
+  .exp-body { font-size: 14px; }
+  .exp-slide img { max-height: 320px; }
+  .exp-slider { max-height: 320px; }
+  .exp-media-single { max-height: 320px; }
+  .exp-media-single img, .exp-media-single video { max-height: 320px; }
+  .news-card-title-overlay h3 { font-size: 18px; }
+}
 .img-preview-grid {
   display: flex;
   flex-wrap: wrap;
@@ -715,17 +724,6 @@ a { text-decoration: none; color: inherit; }
   letter-spacing: 1px;
   margin-top: 6px;
   text-transform: uppercase;
-}
-
-/* Responsive expanded card */
-@media (max-width: 768px) {
-  .exp-content { padding: 20px 18px 24px; }
-  .exp-title { font-size: 26px; }
-  .exp-body { font-size: 14px; }
-  .exp-slide img { max-height: 320px; }
-  .exp-slider { max-height: 320px; }
-  .exp-media-single { max-height: 320px; }
-  .exp-media-single img, .exp-media-single video { max-height: 320px; }
 }
 
 /* ===================== SIDE DRAWER ===================== */
@@ -813,9 +811,3 @@ a { text-decoration: none; color: inherit; }
   letter-spacing: 2px;
   border-top: 1px solid #1a1a1a;
 }
-
-/* Expanded card fonts update */
-.exp-meta { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; color: #AAA; letter-spacing: 1.5px; text-transform: uppercase; }
-.exp-title { font-family: 'Oswald', sans-serif; font-size: 38px; font-weight: 700; color: #0D0D0D; text-transform: uppercase; line-height: 1.1; }
-.exp-body { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 400; color: #333; line-height: 1.75; white-space: pre-wrap; word-break: break-word; }
-.exp-tag { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: #FF3C00; background: rgba(255,60,0,0.08); padding: 3px 8px; border-radius: 2px; letter-spacing: 0.5px; }

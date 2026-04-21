@@ -607,7 +607,7 @@ function renderNewsGrid(items) {
     card.addEventListener('click', () => {
       const id   = card.dataset.id;
       const item = news.find(n => n.id === id);
-      if (item) openExpandedCard(item);
+      if (item) toggleExpandedRow(card, item, grid);
     });
   });
   grid.querySelectorAll('.news-card-link-btn[data-href]').forEach(btn => {
@@ -649,17 +649,63 @@ function buildNewsCard(item) {
   `;
 }
 
-// ====================================================
-// EXPANDED CARD
-// ====================================================
-function openExpandedCard(item) {
-  let overlay = document.getElementById('expandedCardOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'expandedCardOverlay';
-    document.body.appendChild(overlay);
+function toggleExpandedRow(card, item, grid) {
+  const existingRow = grid.querySelector('.news-expanded-row.open');
+
+  // Əgər bu kartın öz row-u açıqdırsa — bağla
+  if (existingRow && existingRow.dataset.forId === item.id) {
+    existingRow.remove();
+    card.classList.remove('is-open');
+    return;
   }
 
+  // Hər hansı açıq row-u bağla
+  if (existingRow) {
+    const prevCard = grid.querySelector(`.news-card[data-id="${existingRow.dataset.forId}"]`);
+    if (prevCard) prevCard.classList.remove('is-open');
+    existingRow.remove();
+  }
+
+  // Yeni expanded row yarat
+  card.classList.add('is-open');
+  const row = buildExpandedRow(item);
+
+  // Kartın grid mövqeyini tap, ondan sonra yeni sətirə əlavə et
+  // grid 2 sütunludur — kartın mövqeyinə görə sıraya sonunu tap
+  const cards = Array.from(grid.querySelectorAll('.news-card'));
+  const idx   = cards.indexOf(card);
+  // Eyni sıradakı son kart: 2 sütun — sıra sonu = idx | 1 (0→1, 1→1, 2→3, 3→3...)
+  const rowLastIdx = idx % 2 === 0 ? idx + 1 : idx;
+  const rowLastCard = cards[rowLastIdx] || card;
+  rowLastCard.insertAdjacentElement('afterend', row);
+
+  // Expanded row-a scroll et
+  setTimeout(() => {
+    row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
+
+  // Bağla düyməsi
+  row.querySelector('.exp-close-row-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    card.classList.remove('is-open');
+    row.remove();
+  });
+
+  // Escape ilə bağla
+  const escHandler = e => {
+    if (e.key === 'Escape') {
+      card.classList.remove('is-open');
+      row.remove();
+      document.removeEventListener('keydown', escHandler);
+    }
+  };
+  document.addEventListener('keydown', escHandler);
+
+  // Slider init
+  initExpandedSlider(row, item);
+}
+
+function buildExpandedRow(item) {
   const images = item.images && item.images.length > 0
     ? item.images
     : (item.media && item.mediaType === 'image' ? [item.media] : []);
@@ -667,12 +713,12 @@ function openExpandedCard(item) {
 
   if (images.length > 1) {
     mediaHTML = `
-      <div class="exp-slider" id="expSlider">
-        <div class="exp-slider-track" id="expSliderTrack">
-          ${images.map((src, i) => `<div class="exp-slide"><img src="${src}" alt="slide ${i+1}" /></div>`).join('')}
+      <div class="exp-slider" id="expSlider_${item.id}">
+        <div class="exp-slider-track" id="expSliderTrack_${item.id}">
+          ${images.map((src, i) => `<div class="exp-slide"><img src="${src}" alt="slide ${i+1}" loading="lazy" /></div>`).join('')}
         </div>
-        <button class="exp-slider-btn exp-slider-prev" id="expSliderPrev">&#8249;</button>
-        <button class="exp-slider-btn exp-slider-next" id="expSliderNext">&#8250;</button>
+        <button class="exp-slider-btn exp-slider-prev">&#8249;</button>
+        <button class="exp-slider-btn exp-slider-next">&#8250;</button>
         <div class="exp-slider-dots">
           ${images.map((_, i) => `<span class="exp-dot${i===0?' active':''}" data-idx="${i}"></span>`).join('')}
         </div>
@@ -684,11 +730,14 @@ function openExpandedCard(item) {
   }
 
   const tagsHTML = (item.tags || []).map(t => `<span class="exp-tag">${escHtml(t)}</span>`).join('');
-  const linkBtn  = item.link ? `<a class="exp-link-btn" href="${escHtml(item.link)}" target="_blank" rel="noopener">${escHtml(item.btnLabel)}</a>` : '';
+  const linkBtn  = item.link ? `<a class="exp-link-btn" href="${escHtml(item.link)}" target="_blank" rel="noopener">${escHtml(item.btnLabel || 'Ətraflı')}</a>` : '';
 
-  overlay.innerHTML = `
-    <div class="exp-card">
-      <button class="exp-close-btn" id="expCloseBtn">✕</button>
+  const row = document.createElement('div');
+  row.className = 'news-expanded-row open';
+  row.dataset.forId = item.id;
+  row.innerHTML = `
+    <div class="exp-row-inner">
+      <button class="exp-close-row-btn">✕</button>
       ${mediaHTML}
       <div class="exp-content">
         <div class="exp-meta">${escHtml(item.date || '')}</div>
@@ -701,34 +750,33 @@ function openExpandedCard(item) {
       </div>
     </div>
   `;
+  return row;
+}
 
-  overlay.classList.add('open');
-  document.getElementById('expCloseBtn').addEventListener('click', () => overlay.classList.remove('open'));
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
-  const escHandler = e => {
-    if (e.key === 'Escape') { overlay.classList.remove('open'); document.removeEventListener('keydown', escHandler); }
-  };
-  document.addEventListener('keydown', escHandler);
+function initExpandedSlider(row, item) {
+  const track = row.querySelector('.exp-slider-track');
+  if (!track) return;
+  const images = item.images && item.images.length > 0
+    ? item.images
+    : (item.media && item.mediaType === 'image' ? [item.media] : []);
+  if (images.length <= 1) return;
 
-  if (images.length > 1) {
-    let cur   = 0;
-    const track = document.getElementById('expSliderTrack');
-    const dots  = overlay.querySelectorAll('.exp-dot');
-    function goTo(idx) {
-      cur = Math.max(0, Math.min(idx, images.length - 1));
-      track.style.transform = `translateX(-${cur * 100}%)`;
-      dots.forEach((d, i) => d.classList.toggle('active', i === cur));
-    }
-    document.getElementById('expSliderPrev').addEventListener('click', () => goTo(cur - 1));
-    document.getElementById('expSliderNext').addEventListener('click', () => goTo(cur + 1));
-    dots.forEach(dot => dot.addEventListener('click', () => goTo(parseInt(dot.dataset.idx))));
-    let tx = 0;
-    track.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
-    track.addEventListener('touchend',   e => {
-      const dx = e.changedTouches[0].clientX - tx;
-      if (Math.abs(dx) > 40) goTo(dx < 0 ? cur + 1 : cur - 1);
-    }, { passive: true });
+  let cur  = 0;
+  const dots = row.querySelectorAll('.exp-dot');
+  function goTo(idx) {
+    cur = Math.max(0, Math.min(idx, images.length - 1));
+    track.style.transform = `translateX(-${cur * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === cur));
   }
+  row.querySelector('.exp-slider-prev').addEventListener('click', e => { e.stopPropagation(); goTo(cur - 1); });
+  row.querySelector('.exp-slider-next').addEventListener('click', e => { e.stopPropagation(); goTo(cur + 1); });
+  dots.forEach(dot => dot.addEventListener('click', e => { e.stopPropagation(); goTo(parseInt(dot.dataset.idx)); }));
+  let tx = 0;
+  track.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend',   e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 40) goTo(dx < 0 ? cur + 1 : cur - 1);
+  }, { passive: true });
 }
 
 // ====================================================

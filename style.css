@@ -467,28 +467,34 @@ a { text-decoration: none; color: inherit; }
   z-index: 2;
 }
 
-/* Kartın açıq halı */
-.news-card.is-open {
-  border-color: #FF3C00;
-  transform: none !important;
-  box-shadow: none !important;
-}
+/* Kartın açıq halı — expanded row section-da təyin edilir */
 
 /* ---- INLINE EXPANDED ROW ---- */
 .news-expanded-row {
-  display: none;
   grid-column: 1 / -1;
   background: #FAF9F6;
   border: 2px solid #FF3C00;
-  border-top: none;
-  animation: expandIn 0.25s ease;
+  border-top: 3px solid #FF3C00;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1),
+              opacity 0.3s ease,
+              border-width 0.3s ease;
+  /* grid item kimi qalsın amma görünməsin */
+  display: block;
+  pointer-events: none;
 }
 .news-expanded-row.open {
-  display: block;
+  max-height: 2400px; /* kifayət qədər böyük — faktiki hündürlükdən çox olsun */
+  opacity: 1;
+  pointer-events: auto;
 }
-@keyframes expandIn {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* Kartın üstündəki sətir vurğusu */
+.news-card.is-open {
+  border-color: #FF3C00 !important;
+  box-shadow: 0 0 0 2px #FF3C0044 !important;
+  transform: none !important;
 }
 
 /* Kapatma düyməsi */

@@ -12,6 +12,7 @@ import {
   addDoc,
   orderBy,
   query,
+  where,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -649,6 +650,13 @@ function buildNewsCard(item) {
   `;
 }
 
+function getGridColumns(grid) {
+  // CSS grid sütun sayını dinamik öyrən
+  const style = window.getComputedStyle(grid);
+  const cols  = style.gridTemplateColumns.split(' ').filter(s => s.trim() !== '').length;
+  return cols || 4;
+}
+
 function toggleExpandedRow(card, item, grid) {
   const existingRow = grid.querySelector('.news-expanded-row.open');
 
@@ -670,19 +678,21 @@ function toggleExpandedRow(card, item, grid) {
   card.classList.add('is-open');
   const row = buildExpandedRow(item);
 
-  // Kartın grid mövqeyini tap, ondan sonra yeni sətirə əlavə et
-  // grid 2 sütunludur — kartın mövqeyinə görə sıraya sonunu tap
+  // Sütun sayına görə sıranın son kartını tap
+  const cols  = getGridColumns(grid);
   const cards = Array.from(grid.querySelectorAll('.news-card'));
   const idx   = cards.indexOf(card);
-  // Eyni sıradakı son kart: 2 sütun — sıra sonu = idx | 1 (0→1, 1→1, 2→3, 3→3...)
-  const rowLastIdx = idx % 2 === 0 ? idx + 1 : idx;
-  const rowLastCard = cards[rowLastIdx] || card;
+  // Sıranın son indeksi
+  const rowStart   = Math.floor(idx / cols) * cols;
+  const rowEnd     = rowStart + cols - 1;
+  const rowLastIdx = Math.min(rowEnd, cards.length - 1);
+  const rowLastCard = cards[rowLastIdx];
   rowLastCard.insertAdjacentElement('afterend', row);
 
   // Expanded row-a scroll et
   setTimeout(() => {
     row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, 50);
+  }, 60);
 
   // Bağla düyməsi
   row.querySelector('.exp-close-row-btn').addEventListener('click', e => {
@@ -703,6 +713,9 @@ function toggleExpandedRow(card, item, grid) {
 
   // Slider init
   initExpandedSlider(row, item);
+
+  // Yorumları yüklə
+  loadComments(item.id, row);
 }
 
 function buildExpandedRow(item) {
@@ -747,6 +760,20 @@ function buildExpandedRow(item) {
           <div class="exp-tags">${tagsHTML}</div>
           ${linkBtn}
         </div>
+      </div>
+      <div class="exp-comments">
+        <div class="exp-comments-title">YORUMLAR</div>
+        <div class="comment-form">
+          <div class="comment-form-row">
+            <input type="text" class="comment-name-input" placeholder="Adınız (məcburi)" maxlength="40" autocomplete="off" />
+            <textarea class="comment-text-input" placeholder="Yorumunuzu yazın..." maxlength="500" rows="3"></textarea>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+            <span class="comment-error-msg">Ad yazmaq məcburidir</span>
+            <button class="comment-submit-btn">GÖNDƏR</button>
+          </div>
+        </div>
+        <div class="comment-list"><div class="comment-loading">YÜKLƏNİR…</div></div>
       </div>
     </div>
   `;
@@ -814,5 +841,105 @@ function fileToBase64(file) {
     reader.onload  = e => resolve(e.target.result);
     reader.onerror = reject;
     reader.readAsDataURL(file);
+  });
+}
+
+// ====================================================
+// COMMENTS
+// ====================================================
+async function loadComments(newsId, row) {
+  const listEl = row.querySelector('.comment-list');
+  if (!listEl) return;
+  try {
+    const q = query(
+      collection(db, 'comments'),
+      where('newsId', '==', newsId),
+      orderBy('createdAt', 'asc')
+    );
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      listEl.innerHTML = '<div class="comment-empty">Hələ yorum yoxdur. İlk yorumu sən yaz!</div>';
+    } else {
+      listEl.innerHTML = snap.docs.map(doc => {
+        const d = doc.data();
+        const dateStr = d.createdAt?.toDate
+          ? d.createdAt.toDate().toLocaleDateString('az-AZ', { day:'2-digit', month:'short', year:'numeric' })
+          : '';
+        return `
+          <div class="comment-item">
+            <div class="comment-item-header">
+              <span class="comment-author">${escHtml(d.author || 'Anonim')}</span>
+              <span class="comment-date">${escHtml(dateStr)}</span>
+            </div>
+            <div class="comment-text">${escHtml(d.text || '')}</div>
+          </div>`;
+      }).join('');
+    }
+  } catch (err) {
+    listEl.innerHTML = `<div class="comment-empty">Yorumlar yüklənmədi.</div>`;
+    console.error('Yorum yüklənmədi:', err);
+  }
+
+  // Form submit
+  const nameInput = row.querySelector('.comment-name-input');
+  const textInput = row.querySelector('.comment-text-input');
+  const submitBtn = row.querySelector('.comment-submit-btn');
+  const errorMsg  = row.querySelector('.comment-error-msg');
+
+  submitBtn.addEventListener('click', async () => {
+    const author = (nameInput.value || '').trim();
+    const text   = (textInput.value || '').trim();
+
+    if (!author) {
+      nameInput.classList.add('error');
+      errorMsg.classList.add('visible');
+      nameInput.focus();
+      return;
+    }
+    nameInput.classList.remove('error');
+    errorMsg.classList.remove('visible');
+    if (!text) { textInput.focus(); return; }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'GÖNDƏRİLİR…';
+    try {
+      await addDoc(collection(db, 'comments'), {
+        newsId,
+        author,
+        text,
+        createdAt: serverTimestamp()
+      });
+      textInput.value = '';
+      // Yeni yorumu list-ə əlavə et
+      const dateStr = new Date().toLocaleDateString('az-AZ', { day:'2-digit', month:'short', year:'numeric' });
+      const emptyEl = listEl.querySelector('.comment-empty');
+      if (emptyEl) emptyEl.remove();
+      const newItem = document.createElement('div');
+      newItem.className = 'comment-item';
+      newItem.innerHTML = `
+        <div class="comment-item-header">
+          <span class="comment-author">${escHtml(author)}</span>
+          <span class="comment-date">${escHtml(dateStr)}</span>
+        </div>
+        <div class="comment-text">${escHtml(text)}</div>`;
+      listEl.appendChild(newItem);
+      newItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } catch (err) {
+      alert('Yorum göndərilmədi: ' + err.message);
+      console.error(err);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'GÖNDƏR';
+    }
+  });
+
+  // Enter ilə göndər (Shift+Enter yeni sətir)
+  textInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitBtn.click(); }
+  });
+
+  nameInput.addEventListener('input', () => {
+    nameInput.classList.remove('error');
+    errorMsg.classList.remove('visible');
   });
 }

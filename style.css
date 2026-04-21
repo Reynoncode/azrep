@@ -93,15 +93,15 @@ a { text-decoration: none; color: inherit; }
 
 .news-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
 }
 
 /* --- NEWS CARD (published) --- */
 .news-card {
   display: flex;
   flex-direction: column;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
   cursor: pointer;
   border: 2px solid #0D0D0D;
@@ -428,6 +428,9 @@ a { text-decoration: none; color: inherit; }
 .trim-input { text-align: center; }
 
 /* --- RESPONSIVE --- */
+@media (max-width: 1024px) {
+  .news-grid { grid-template-columns: repeat(2, 1fr); }
+}
 @media (max-width: 768px) {
   .header-inner { padding: 14px 16px; flex-direction: column; align-items: flex-start; gap: 10px; }
   .header-right { align-items: flex-start; }
@@ -438,8 +441,8 @@ a { text-decoration: none; color: inherit; }
   .feature-section { grid-template-columns: 1fr; }
   .feature-main { padding: 24px 0; border-right: none; border-bottom: 2px solid #0D0D0D; }
   .feature-title { font-size: 38px; }
-  .news-grid { grid-template-columns: 1fr; gap: 16px; }
-  .news-card { aspect-ratio: auto; min-height: 420px; }
+  .news-grid { grid-template-columns: 1fr; gap: 14px; }
+  .news-card { aspect-ratio: auto; min-height: 340px; }
   .footer-inner { padding: 14px 16px; flex-direction: column; gap: 8px; text-align: center; }
   .video-edit-layout { grid-template-columns: 1fr; }
   .hashtag-inputs { flex-direction: column; }
@@ -724,6 +727,160 @@ a { text-decoration: none; color: inherit; }
   letter-spacing: 1px;
   margin-top: 6px;
   text-transform: uppercase;
+}
+
+/* ===================== COMMENTS ===================== */
+.exp-comments {
+  padding: 24px 36px 32px;
+  border-top: 3px solid #0D0D0D;
+  background: #F0EDE8;
+}
+.exp-comments-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #0D0D0D;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.exp-comments-title::before { content: ''; display: inline-block; width: 20px; height: 3px; background: #FF3C00; }
+
+/* Comment form */
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+  background: #fff;
+  border: 2px solid #0D0D0D;
+  padding: 16px;
+}
+.comment-form-row {
+  display: flex;
+  gap: 10px;
+}
+.comment-name-input {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 12px;
+  border: 2px solid #D0CEC9;
+  background: #FAF9F6;
+  color: #0D0D0D;
+  outline: none;
+  width: 200px;
+  flex-shrink: 0;
+  transition: border-color 0.15s;
+}
+.comment-name-input:focus { border-color: #FF3C00; }
+.comment-name-input.error { border-color: #FF3C00; background: #fff0ed; }
+.comment-text-input {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  padding: 9px 12px;
+  border: 2px solid #D0CEC9;
+  background: #FAF9F6;
+  color: #0D0D0D;
+  outline: none;
+  resize: none;
+  min-height: 72px;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+.comment-text-input:focus { border-color: #FF3C00; }
+.comment-submit-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: #0D0D0D;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.comment-submit-btn:hover { background: #FF3C00; }
+.comment-submit-btn:disabled { background: #888; cursor: not-allowed; }
+.comment-error-msg {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: #FF3C00;
+  font-weight: 600;
+  display: none;
+}
+.comment-error-msg.visible { display: block; }
+
+/* Comment list */
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.comment-item {
+  background: #fff;
+  border-left: 3px solid #FF3C00;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.comment-item-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.comment-author {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0D0D0D;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.comment-date {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: #AAA;
+  letter-spacing: 1px;
+}
+.comment-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: #333;
+  line-height: 1.6;
+  word-break: break-word;
+}
+.comment-empty {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: #AAA;
+  font-style: italic;
+  text-align: center;
+  padding: 16px 0;
+}
+.comment-loading {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #AAA;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 12px 0;
+}
+
+@media (max-width: 768px) {
+  .exp-comments { padding: 18px 16px 24px; }
+  .comment-form-row { flex-direction: column; }
+  .comment-name-input { width: 100%; }
+  .comment-submit-btn { width: 100%; text-align: center; }
 }
 
 /* ===================== SIDE DRAWER ===================== */

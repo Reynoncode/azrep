@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initNav();
   initTicker();
   initModal();
+  initDrawer();
   initImageUpload();
   initVideoUpload();
   initMediaTabs();
@@ -174,6 +175,37 @@ function initModal() {
 function closeNewsModal() {
   document.getElementById('newsModal').classList.remove('open');
   resetForm();
+}
+
+// ====================================================
+// SIDE DRAWER
+// ====================================================
+function initDrawer() {
+  const drawer  = document.getElementById('sideDrawer');
+  const overlay = document.getElementById('drawerOverlay');
+  const openBtn = document.getElementById('hamburgerBtn');
+  const closeBtn = document.getElementById('drawerClose');
+
+  function openDrawer()  { drawer.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeDrawer() { drawer.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; }
+
+  if (openBtn)  openBtn.addEventListener('click', openDrawer);
+  if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+  if (overlay)  overlay.addEventListener('click', closeDrawer);
+
+  document.querySelectorAll('.drawer-link').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      const matchingNav = document.querySelector(`.nav-link[data-section="${link.dataset.section}"]`);
+      if (matchingNav) matchingNav.classList.add('active');
+      currentSection = link.dataset.section;
+      renderView();
+      closeDrawer();
+    });
+  });
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
 }
 
 function resetForm() {

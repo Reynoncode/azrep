@@ -7,7 +7,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;700&family=Permanent+Marker&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/header-nav.css" />
+  <link rel="stylesheet" href="css/news.css" />
+  <link rel="stylesheet" href="css/modal.css" />
+  <link rel="stylesheet" href="css/comments.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
 </head>
 <body>
 
@@ -107,22 +114,16 @@
         <span class="modal-title">YENİ XƏBƏR</span>
         <button class="modal-close" id="closeModalBtn">✕</button>
       </div>
-
       <div class="modal-body">
-        <!-- Başlıq -->
         <div class="form-group">
           <label class="form-label">BAŞLIQ</label>
           <input type="text" id="newsTitle" class="form-input" placeholder="Xəbərin başlığı..." maxlength="120" />
           <span class="char-count" id="titleCount">0/120</span>
         </div>
-
-        <!-- Xəbərin mətni -->
         <div class="form-group">
           <label class="form-label">XƏBƏRİN MƏTNİ</label>
           <textarea id="newsBody" class="form-textarea" placeholder="Xəbəri buraya yazın..."></textarea>
         </div>
-
-        <!-- Hashtag -->
         <div class="form-group">
           <label class="form-label">HASHTAGLAR (maks. 3)</label>
           <div class="hashtag-inputs">
@@ -131,16 +132,12 @@
             <input type="text" class="form-input hashtag-input" placeholder="#xeber" maxlength="30" />
           </div>
         </div>
-
-        <!-- Şəkil / Video seçimi -->
         <div class="form-group">
           <label class="form-label">MEDIA</label>
           <div class="media-tabs">
             <button class="media-tab active" data-tab="image">🖼 Şəkil</button>
             <button class="media-tab" data-tab="video">🎬 Video</button>
           </div>
-
-          <!-- Şəkil panel -->
           <div class="media-panel active" id="imagePanel">
             <div class="file-drop-zone" id="imageDropZone">
               <input type="file" id="imageInput" accept="image/*" hidden />
@@ -150,8 +147,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Video panel -->
           <div class="media-panel" id="videoPanel">
             <div class="file-drop-zone" id="videoDropZone">
               <input type="file" id="videoInput" accept="video/*" hidden />
@@ -162,21 +157,15 @@
             </div>
           </div>
         </div>
-
-        <!-- Keçid linki -->
         <div class="form-group">
           <label class="form-label">KEÇİD LİNKİ (istəyə bağlı)</label>
           <input type="url" id="newsLink" class="form-input" placeholder="https://..." />
         </div>
-
-        <!-- Button yazısı -->
         <div class="form-group" id="btnLabelGroup" style="display:none">
           <label class="form-label">BUTTON YAZISI <small>(maks. 25 hərf)</small></label>
           <input type="text" id="newsBtnLabel" class="form-input" placeholder="Ətraflı oxu" maxlength="25" />
           <span class="char-count" id="btnLabelCount">0/25</span>
         </div>
-
-        <!-- Yayımla button -->
         <button class="publish-btn" id="publishBtn">YAYIMLA</button>
       </div>
     </div>
@@ -231,7 +220,6 @@
       </div>
       <div class="modal-body">
         <div class="video-edit-layout">
-          <!-- Sol: video preview -->
           <div class="video-preview-col">
             <video id="editVideo" controls style="width:100%;border-radius:4px;background:#000;"></video>
             <div class="video-crop-frame-wrapper">
@@ -249,8 +237,6 @@
               <p class="crop-note">Video çərçivəsini crop edin</p>
             </div>
           </div>
-
-          <!-- Sağ: müddət seçimi -->
           <div class="video-trim-col">
             <div class="edit-control-group">
               <label>Müddət seçimi (saniyə)</label>
@@ -276,7 +262,6 @@
             </div>
           </div>
         </div>
-
         <div class="modal-actions">
           <button class="action-btn secondary" id="cancelVideoEditBtn">Ləğv et</button>
           <button class="action-btn primary" id="applyVideoEditBtn">Tətbiq et</button>
@@ -303,6 +288,8 @@
     <div class="drawer-footer">Hiphop, Rep və Daha Çoxu</div>
   </div>
 
-  <script type="module" src="script.js"></script>
+  <!-- JS -->
+  <script type="module" src="js/main.js"></script>
+
 </body>
 </html>

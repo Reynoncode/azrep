@@ -1,15 +1,8 @@
 /* ==============================
-   header-nav.css — Header, Nav, Drawer, Footer
+   header-nav.css — Nav, Drawer, Footer
    ============================== */
 
-/* --- HEADER --- */
-.site-header { background: #FAF9F6; border-bottom: 4px solid #0D0D0D; }
-.header-inner { max-width: 1200px; margin: 0 auto; padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; }
-.logo { font-family: 'Permanent Marker', cursive; font-size: 52px; font-weight: 400; line-height: 1; letter-spacing: 2px; color: #0D0D0D; }
-.logo em { color: #002BED; font-style: normal; }
-.header-right { display: flex; align-items: center; gap: 14px; }
-
-/* --- ADD NEWS BUTTON --- */
+/* --- ADD NEWS BUTTON (drawer içində) --- */
 .add-news-btn {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
@@ -19,15 +12,15 @@
   background: #FF3C00;
   color: #fff;
   border: 2px solid #FF3C00;
-  padding: 10px 18px;
+  padding: 12px 20px;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s, box-shadow 0.2s;
+  width: 100%;
+  transition: background 0.15s, box-shadow 0.2s;
   box-shadow: 0 0 14px rgba(255,60,0,0.45), 0 0 28px rgba(255,60,0,0.2);
 }
 .add-news-btn:hover {
   background: #cc3000;
   border-color: #cc3000;
-  transform: translateY(-1px);
   box-shadow: 0 0 20px rgba(255,60,0,0.7), 0 0 40px rgba(255,60,0,0.3);
 }
 
@@ -36,28 +29,53 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 32px;
-  height: 22px;
+  width: 28px;
+  height: 20px;
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
   flex-shrink: 0;
+  margin-left: auto;
 }
 .hamburger-btn span {
   display: block;
   width: 100%;
-  height: 3px;
-  background: #0D0D0D;
+  height: 2px;
+  background: #888;
   border-radius: 1px;
   transition: background 0.15s;
 }
 .hamburger-btn:hover span { background: #FF3C00; }
 
 /* --- NAV --- */
-.main-nav { background: #0D0D0D; position: sticky; top: 0; z-index: 100; border-bottom: 3px solid #FF3C00; }
-.nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 32px; display: flex; }
-.nav-link { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 1px; padding: 14px 14px; border-bottom: 3px solid transparent; margin-bottom: -3px; transition: color 0.15s, border-color 0.15s; }
+.main-nav {
+  background: #0D0D0D;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 3px solid #FF3C00;
+}
+.nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+}
+.nav-link {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 14px 14px;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -3px;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
 .nav-link:first-child { padding-left: 0; }
 .nav-link:hover, .nav-link.active { color: #FF3C00; border-bottom-color: #FF3C00; }
 
@@ -68,7 +86,7 @@
 .footer-logo em { color: #002BED; font-style: normal; }
 .footer-copy { font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500; color: #444; text-transform: uppercase; letter-spacing: 1px; }
 
-/* --- SIDE DRAWER --- */
+/* --- SIDE DRAWER (soldan açılır) --- */
 .drawer-overlay {
   display: none;
   position: fixed;
@@ -82,32 +100,26 @@
 .side-drawer {
   position: fixed;
   top: 0;
-  right: 0;
+  left: 0;
   width: 300px;
   height: 100vh;
   background: #0D0D0D;
   z-index: 600;
   display: flex;
   flex-direction: column;
-  transform: translateX(100%);
+  transform: translateX(-100%);
   transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-  border-left: 3px solid #FF3C00;
+  border-right: 3px solid #FF3C00;
 }
 .side-drawer.open { transform: translateX(0); }
 
 .drawer-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px;
+  justify-content: flex-end;
+  padding: 16px 20px;
   border-bottom: 1px solid #222;
 }
-.drawer-logo {
-  font-family: 'Permanent Marker', cursive;
-  font-size: 28px;
-  color: #fff;
-}
-.drawer-logo em { color: #002BED; font-style: normal; }
 
 .drawer-close {
   background: none;
@@ -120,10 +132,15 @@
 }
 .drawer-close:hover { color: #FF3C00; }
 
+.drawer-add-news {
+  padding: 20px 24px;
+  border-bottom: 1px solid #222;
+}
+
 .drawer-nav {
   display: flex;
   flex-direction: column;
-  padding: 24px 0;
+  padding: 16px 0;
   flex: 1;
 }
 .drawer-link {

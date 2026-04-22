@@ -1,0 +1,290 @@
+// ==============================
+// news.js — Xəbər grid, expanded row, slider, publish
+// ==============================
+
+import { db, collection, getDocs, addDoc, orderBy, query, serverTimestamp } from './firebase.js';
+import { news, setNews, currentImages, currentVideoFile, activeMediaType, currentSection } from './state.js';
+import { escHtml, compressImage, fileToBase64 } from './utils.js';
+import { closeNewsModal } from './ui.js';
+import { loadComments } from './comments.js';
+
+// ============================================================
+// LOAD & RENDER
+// ============================================================
+export async function loadNews() {
+  showGridLoading(true);
+  try {
+    const q        = query(collection(db, 'news'), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    setNews(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  } catch (err) {
+    console.error('Xəbərlər yüklənərkən xəta:', err);
+    showGridError(err.message);
+    return;
+  } finally {
+    showGridLoading(false);
+  }
+  renderView();
+}
+
+export function renderView() {
+  const featureSection  = document.querySelector('.feature-section');
+  const newsGridSection = document.querySelector('.news-grid-section');
+  const sectionTag      = newsGridSection?.querySelector('.section-tag');
+
+  if (currentSection === 'news') {
+    if (featureSection) featureSection.style.display = 'none';
+    if (sectionTag) sectionTag.textContent = 'BÜTÜN XƏBƏRLƏR';
+    renderNewsGrid(news);
+  } else {
+    if (featureSection) featureSection.style.display = '';
+    if (sectionTag) sectionTag.textContent = 'SON XƏBƏRLƏR';
+    renderNewsGrid(news.slice(0, 4));
+  }
+}
+
+function showGridLoading(on) {
+  const grid = document.getElementById('newsGrid');
+  if (!grid) return;
+  if (on) grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#AAA;letter-spacing:2px;">YÜKLƏNİR…</div>`;
+}
+
+function showGridError(msg) {
+  const grid = document.getElementById('newsGrid');
+  if (!grid) return;
+  grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#FF3C00;letter-spacing:2px;">XƏTA: ${escHtml(msg)}<br><br>Firebase config-i yoxlayın.</div>`;
+}
+
+// ============================================================
+// NEWS GRID
+// ============================================================
+export function renderNewsGrid(items) {
+  const grid = document.getElementById('newsGrid');
+  if (!grid) return;
+  grid.querySelectorAll('.news-expanded-row').forEach(r => r.remove());
+  if (!items || items.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#AAA;letter-spacing:2px;">HƏLƏ XƏBƏRLƏRİ ƏLAVƏ EDİLMƏYİB</div>`;
+    return;
+  }
+  grid.innerHTML = items.map(item => buildNewsCard(item)).join('');
+  grid.querySelectorAll('.news-card').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('.news-card-link-btn')) return;
+      const id   = card.dataset.id;
+      const item = news.find(n => n.id === id);
+      if (item) toggleExpandedRow(card, item, grid);
+    });
+  });
+  grid.querySelectorAll('.news-card-link-btn[data-href]').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); window.open(btn.dataset.href, '_blank'); });
+  });
+}
+
+function buildNewsCard(item) {
+  let topMedia;
+  if (item.mediaType === 'image' && item.media)
+    topMedia = `<img src="${item.media}" alt="${escHtml(item.title)}" />`;
+  else if (item.mediaType === 'video' && item.media)
+    topMedia = `<video src="${item.media}" muted autoplay loop playsinline></video>`;
+  else
+    topMedia = `<div class="news-card-top-placeholder">NO MEDIA</div>`;
+
+  const hasMultiple = item.images && item.images.length > 1;
+  const tagsHTML    = (item.tags || []).slice(0, 3).map(t => `<span class="news-card-tag">${escHtml(t)}</span>`).join('');
+  const linkBtn     = item.link
+    ? `<a class="news-card-link-btn" data-href="${escHtml(item.link)}" href="${escHtml(item.link)}" target="_blank" rel="noopener">${escHtml(item.btnLabel)}</a>`
+    : '';
+  const excerpt = (item.body || '').length > 100 ? item.body.slice(0, 100) + '…' : (item.body || '');
+
+  return `
+    <article class="news-card" data-id="${item.id}">
+      <div class="news-card-top">
+        ${topMedia}
+        ${hasMultiple ? `<div class="news-card-multi-badge">&#9654; ${item.images.length}</div>` : ''}
+        <div class="news-card-title-overlay"><h3>${escHtml(item.title)}</h3></div>
+      </div>
+      <div class="news-card-bottom">
+        <p class="news-card-excerpt">${escHtml(excerpt)}</p>
+        <div class="news-card-footer">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <span class="news-card-meta">${escHtml(item.date || '')}</span>
+            <div class="news-card-tags">${tagsHTML}</div>
+          </div>
+          ${linkBtn}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+// ============================================================
+// EXPANDED ROW
+// ============================================================
+function getGridColumns(grid) {
+  const cols = window.getComputedStyle(grid).gridTemplateColumns.split(' ').filter(s => s.trim() !== '').length;
+  return cols || 4;
+}
+
+function closeExpandedRow(row, card) {
+  row.classList.remove('open');
+  if (card) card.classList.remove('is-open');
+  setTimeout(() => { if (row.parentNode) row.remove(); }, 460);
+}
+
+function toggleExpandedRow(card, item, grid) {
+  const existingRow = grid.querySelector('.news-expanded-row.open');
+  if (existingRow && existingRow.dataset.forId === item.id) {
+    closeExpandedRow(existingRow, card); return;
+  }
+  if (existingRow) {
+    const prevCard = grid.querySelector(`.news-card[data-id="${existingRow.dataset.forId}"]`);
+    closeExpandedRow(existingRow, prevCard);
+  }
+  card.classList.add('is-open');
+  const row  = buildExpandedRow(item);
+  const cols  = getGridColumns(grid);
+  const cards = Array.from(grid.querySelectorAll('.news-card'));
+  const idx   = cards.indexOf(card);
+  const rowLastIdx = Math.min(Math.floor(idx / cols) * cols + cols - 1, cards.length - 1);
+  cards[rowLastIdx].insertAdjacentElement('afterend', row);
+  requestAnimationFrame(() => requestAnimationFrame(() => row.classList.add('open')));
+  setTimeout(() => row.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80);
+  row.querySelector('.exp-close-row-btn').addEventListener('click', e => {
+    e.stopPropagation(); closeExpandedRow(row, card);
+  });
+  const escHandler = e => {
+    if (e.key === 'Escape') { closeExpandedRow(row, card); document.removeEventListener('keydown', escHandler); }
+  };
+  document.addEventListener('keydown', escHandler);
+  initExpandedSlider(row, item);
+  loadComments(item.id, row);
+}
+
+function buildExpandedRow(item) {
+  const images = item.images && item.images.length > 0
+    ? item.images
+    : (item.media && item.mediaType === 'image' ? [item.media] : []);
+
+  let mediaHTML = '';
+  if (images.length > 1) {
+    mediaHTML = `
+      <div class="exp-slider" id="expSlider_${item.id}">
+        <div class="exp-slider-track" id="expSliderTrack_${item.id}">
+          ${images.map((src, i) => `<div class="exp-slide"><img src="${src}" alt="slide ${i + 1}" loading="lazy" /></div>`).join('')}
+        </div>
+        <button class="exp-slider-btn exp-slider-prev">&#8249;</button>
+        <button class="exp-slider-btn exp-slider-next">&#8250;</button>
+        <div class="exp-slider-dots">
+          ${images.map((_, i) => `<span class="exp-dot${i === 0 ? ' active' : ''}" data-idx="${i}"></span>`).join('')}
+        </div>
+      </div>`;
+  } else if (images.length === 1) {
+    mediaHTML = `<div class="exp-media-single"><img src="${images[0]}" alt="${escHtml(item.title)}" /></div>`;
+  } else if (item.mediaType === 'video' && item.media) {
+    mediaHTML = `<div class="exp-media-single"><video src="${item.media}" controls autoplay muted playsinline></video></div>`;
+  }
+
+  const tagsHTML = (item.tags || []).map(t => `<span class="exp-tag">${escHtml(t)}</span>`).join('');
+  const linkBtn  = item.link
+    ? `<a class="exp-link-btn" href="${escHtml(item.link)}" target="_blank" rel="noopener">${escHtml(item.btnLabel || 'Ətraflı')}</a>`
+    : '';
+
+  const row = document.createElement('div');
+  row.className     = 'news-expanded-row';
+  row.dataset.forId = item.id;
+  row.innerHTML = `
+    <div class="exp-row-inner">
+      <button class="exp-close-row-btn">✕</button>
+      ${mediaHTML}
+      <div class="exp-content">
+        <div class="exp-meta">${escHtml(item.date || '')}</div>
+        <h2 class="exp-title">${escHtml(item.title)}</h2>
+        <p class="exp-body">${escHtml(item.body || '')}</p>
+        <div class="exp-footer"><div class="exp-tags">${tagsHTML}</div>${linkBtn}</div>
+      </div>
+      <div class="exp-comments" id="expComments_${item.id}">
+        <div class="comments-loading-state">YÜKLƏNİR…</div>
+      </div>
+    </div>
+  `;
+  return row;
+}
+
+function initExpandedSlider(row, item) {
+  const track = row.querySelector('.exp-slider-track');
+  if (!track) return;
+  const images = item.images && item.images.length > 0
+    ? item.images
+    : (item.media && item.mediaType === 'image' ? [item.media] : []);
+  if (images.length <= 1) return;
+
+  let cur  = 0;
+  const dots = row.querySelectorAll('.exp-dot');
+  function goTo(idx) {
+    cur = Math.max(0, Math.min(idx, images.length - 1));
+    track.style.transform = `translateX(-${cur * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === cur));
+  }
+  row.querySelector('.exp-slider-prev').addEventListener('click', e => { e.stopPropagation(); goTo(cur - 1); });
+  row.querySelector('.exp-slider-next').addEventListener('click', e => { e.stopPropagation(); goTo(cur + 1); });
+  dots.forEach(dot => dot.addEventListener('click', e => { e.stopPropagation(); goTo(parseInt(dot.dataset.idx)); }));
+
+  let tx = 0;
+  track.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend',   e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 40) goTo(dx < 0 ? cur + 1 : cur - 1);
+  }, { passive: true });
+}
+
+// ============================================================
+// PUBLISH
+// ============================================================
+export function initPublish() {
+  document.getElementById('publishBtn').addEventListener('click', publishNews);
+}
+
+async function publishNews() {
+  const title = document.getElementById('newsTitle').value.trim();
+  if (!title) { alert('Başlıq boş ola bilməz!'); return; }
+
+  const publishBtn = document.getElementById('publishBtn');
+  publishBtn.disabled    = true;
+  publishBtn.textContent = 'YÜKLƏNIR…';
+
+  const body     = document.getElementById('newsBody').value.trim();
+  const link     = document.getElementById('newsLink').value.trim();
+  const btnLabel = document.getElementById('newsBtnLabel').value.trim() || 'Ətraflı oxu';
+  const tags     = [...document.querySelectorAll('.hashtag-input')]
+    .map(i => i.value.trim()).filter(Boolean)
+    .map(t => t.startsWith('#') ? t : '#' + t);
+  const now     = new Date();
+  const dateStr = now.toLocaleString('az-AZ', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase();
+
+  let imageUrls = [], mediaUrl = null, mediaType = null;
+  try {
+    if (activeMediaType === 'image' && currentImages.length > 0) {
+      mediaType = 'image';
+      for (let i = 0; i < currentImages.length; i++) {
+        const compressed = await compressImage(currentImages[i], 800, 0.75);
+        imageUrls.push(compressed);
+      }
+      mediaUrl = imageUrls[0];
+    }
+    if (activeMediaType === 'video' && currentVideoFile) {
+      mediaType = 'video';
+      mediaUrl  = await fileToBase64(currentVideoFile);
+    }
+    const docData = { title, body, link, btnLabel, tags, date: dateStr, mediaType: mediaType || null, media: mediaUrl || null, images: imageUrls, createdAt: serverTimestamp() };
+    const docRef  = await addDoc(collection(db, 'news'), docData);
+    news.unshift({ id: docRef.id, ...docData });
+    renderView();
+    closeNewsModal();
+  } catch (err) {
+    console.error('Yayımlanarkən xəta:', err);
+    alert('Xəta baş verdi: ' + err.message);
+  } finally {
+    publishBtn.disabled    = false;
+    publishBtn.textContent = 'YAYIMLA';
+  }
+}

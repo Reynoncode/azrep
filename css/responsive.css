@@ -1,0 +1,50 @@
+/* ==============================
+   responsive.css — Media Queries
+   ============================== */
+
+@media (max-width: 1024px) {
+  .news-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  /* Header & Nav */
+  .header-inner { padding: 14px 16px; flex-direction: column; align-items: flex-start; gap: 10px; }
+  .header-right { align-items: flex-start; }
+  .logo { font-size: 52px; }
+  .nav-inner { padding: 0 16px; overflow-x: auto; scrollbar-width: none; }
+  .nav-inner::-webkit-scrollbar { display: none; }
+
+  /* Main & Feature */
+  .site-main { padding: 0 16px 32px; }
+  .feature-section { grid-template-columns: 1fr; }
+  .feature-main { padding: 24px 0; border-right: none; border-bottom: 2px solid #0D0D0D; }
+  .feature-title { font-size: 38px; }
+
+  /* News Grid */
+  .news-grid { grid-template-columns: 1fr; gap: 14px; }
+  .news-card { aspect-ratio: auto; min-height: 340px; }
+  .news-card-title-overlay h3 { font-size: 18px; }
+
+  /* Expanded Row */
+  .exp-content { padding: 18px 16px 22px; }
+  .exp-title { font-size: 26px; }
+  .exp-body { font-size: 14px; }
+  .exp-slide img { max-height: 320px; }
+  .exp-slider { max-height: 320px; }
+  .exp-media-single { max-height: 320px; }
+  .exp-media-single img, .exp-media-single video { max-height: 320px; }
+
+  /* Footer */
+  .footer-inner { padding: 14px 16px; flex-direction: column; gap: 8px; text-align: center; }
+
+  /* Modal / Video */
+  .video-edit-layout { grid-template-columns: 1fr; }
+  .hashtag-inputs { flex-direction: column; }
+
+  /* Comments */
+  .exp-comments { padding: 18px 16px 24px; }
+  .comment-add-form { padding: 12px; gap: 8px; }
+  .comment-form-avatar { width: 30px; height: 30px; }
+  .comment-name-input { width: 100%; }
+  .exp-comments-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+}

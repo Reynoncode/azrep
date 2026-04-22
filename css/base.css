@@ -1,0 +1,8 @@
+/* ==============================
+   base.css — Reset & Global
+   ============================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background-color: #FAF9F6; color: #0D0D0D; font-family: 'Inter', sans-serif; min-height: 100vh; }
+a { text-decoration: none; color: inherit; }

@@ -23,18 +23,34 @@
   <!-- NAV -->
   <nav class="main-nav">
     <div class="nav-inner">
-      <a href="#" class="nav-link active" data-section="home">Ana Səhifə</a>
-      <a href="#" class="nav-link" data-section="news">Xəbərlər</a>
-      <a href="#" class="nav-link" data-section="albums">Relizlər</a>
-      <a href="#" class="nav-link" data-section="interview">Podcastlar</a>
-      <a href="#" class="nav-link" data-section="azrap">Sənətçilər</a>
-      <a href="#" class="nav-link" data-section="world">Gündəm</a>
-      <button class="nav-add-artist-btn" id="openArtistModalBtn">+ SƏNƏTÇİ</button>
+      <!-- Sol: Burger -->
       <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menyu">
         <span></span>
         <span></span>
         <span></span>
       </button>
+
+      <!-- Orta: Logo + Axtarış -->
+      <div class="nav-center">
+        <a href="#" class="nav-logo-link" id="navLogoLink">AZREP</a>
+        <div class="nav-search-wrap" id="navSearchWrap">
+          <input type="text" class="nav-search-input" id="navSearchInput" placeholder="Axtar..." autocomplete="off" />
+          <svg class="nav-search-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.8"/>
+            <line x1="12.5" y1="12.5" x2="17" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <!-- Axtarış nəticələri dropdown -->
+          <div class="nav-search-results" id="navSearchResults"></div>
+        </div>
+      </div>
+
+      <!-- Sağ: Profil -->
+      <div class="nav-profile" title="Profil (tezliklə)">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
+          <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
     </div>
   </nav>
 

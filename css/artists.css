@@ -16,10 +16,11 @@
 /* ── 3-sütunlu əsas layout ── */
 .artists-page {
   display: grid;
-  grid-template-columns: 240px 1fr 220px;
+  grid-template-columns: 240px 25vw 220px;
   gap: 0;
   min-height: 600px;
   align-items: flex-start;
+  justify-content: start;
 }
 
 /* ============================================================
@@ -125,7 +126,10 @@
    ORTA — Sənətçi kartları
    ============================================================ */
 .artists-main {
-  padding: 0 28px 32px;
+  padding: 0 0 32px;
+  width: 25vw;
+  min-width: 220px;
+  max-width: 400px;
 }
 .artists-grid {
   display: flex;

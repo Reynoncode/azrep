@@ -133,6 +133,11 @@
   .artists-page {
     grid-template-columns: 1fr;
   }
+  .artists-main {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 0 24px;
+  }
   .artists-sidebar-left,
   .artists-sidebar-right {
     border-right: none;
@@ -142,7 +147,7 @@
     padding-right: 0;
   }
   .artists-sidebar-left {
-    display: none; /* Mobilsə yan panel gizlə */
+    display: none;
   }
 }
 
@@ -150,14 +155,16 @@
    GÜNDƏM — Mobil
    ============================================================ */
 @media (max-width: 768px) {
-  .gundem-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
+  .gundem-page {
+    width: 100%;
+    max-width: 100%;
+  }
+  .gundem-header-top {
+    gap: 10px;
   }
   .gundem-new-topic-btn {
-    width: 100%;
-    justify-content: center;
+    width: auto;
+    flex-shrink: 0;
   }
   .gundem-topic-row {
     padding: 14px 10px;

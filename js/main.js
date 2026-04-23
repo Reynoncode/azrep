@@ -5,6 +5,7 @@
 import { setCurrentDate, initNav, initTicker, initModal, initDrawer } from './ui.js';
 import { initImageUpload, initVideoUpload, initMediaTabs, initLinkInput } from './media.js';
 import { initPublish, loadNews } from './news.js';
+import { initArtistModal } from './artists.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   setCurrentDate();
@@ -17,5 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initMediaTabs();
   initLinkInput();
   initPublish();
+  initArtistModal();
   loadNews();
 });

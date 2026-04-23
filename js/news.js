@@ -94,7 +94,7 @@ export function renderReleasesGrid(items) {
     return;
   }
   // Release grid 5 sütun
-  grid.style.gridTemplateColumns = 'repeat(5, 1fr)';
+  grid.style.gridTemplateColumns = window.innerWidth <= 768 ? 'repeat(2, 1fr)' : 'repeat(5, 1fr)';
   grid.innerHTML = items.map(item => buildReleaseCard(item)).join('');
   grid.querySelectorAll('.release-card').forEach(card => {
     card.addEventListener('click', () => {

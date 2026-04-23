@@ -7,6 +7,7 @@ import { news, releases, podcasts, setNews, setReleases, setPodcasts, pushReleas
 import { escHtml, compressImage, fileToBase64 } from './utils.js';
 import { closeNewsModal } from './ui.js';
 import { loadComments } from './comments.js';
+import { renderArtistsSection } from './artists.js';
 
 // ============================================================
 // LOAD & RENDER
@@ -53,8 +54,17 @@ export function renderView() {
     if (featureSection) featureSection.style.display = 'none';
     if (sectionTag) sectionTag.textContent = 'PODCASTLAR';
     renderPodcastsGrid(podcasts);
+  } else if (currentSection === 'azrap') {
+    if (featureSection) featureSection.style.display = 'none';
+    if (newsGridSection) newsGridSection.style.paddingTop = '0';
+    if (sectionTag) sectionTag.textContent = '';
+    if (grid) {
+      grid.style.gridTemplateColumns = '1fr';
+      renderArtistsSection(grid);
+    }
   } else {
     if (featureSection) featureSection.style.display = '';
+    if (newsGridSection) newsGridSection.style.paddingTop = '';
     if (sectionTag) sectionTag.textContent = 'SON XƏBƏRLƏR';
     renderNewsGrid(news.slice(0, 4));
   }

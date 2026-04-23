@@ -4,6 +4,7 @@
 
 export let news            = [];
 export let releases        = [];
+export let artists         = [];
 export let podcasts        = [];
 export let currentImages   = [];
 export let currentVideoFile = null;
@@ -22,6 +23,8 @@ export let cropState = {
 // Setter-lər (ES module dəyişənlərini xaricdən dəyişmək üçün)
 export function setNews(val)             { news = val; }
 export function setReleases(val)         { releases = val; }
+export function setArtists(val)          { artists = val; }
+export function pushArtist(val)          { artists.unshift(val); }
 export function setPodcasts(val)         { podcasts = val; }
 export function pushRelease(val)         { releases.unshift(val); }
 export function pushPodcast(val)         { podcasts.unshift(val); }

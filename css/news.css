@@ -497,24 +497,35 @@
 .exp-rel-inner {
   flex-direction: column !important;
 }
-.exp-rel-header {
-  display: flex;
-  gap: 32px;
-  padding: 28px 36px 28px;
+
+/* Yeni 2-sütunlu layout */
+.exp-rel-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 36px;
+  padding: 28px 36px;
   align-items: flex-start;
 }
+.exp-rel-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.exp-rel-thumb-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
 .exp-rel-thumb {
-  width: 200px;
-  height: 200px;
-  flex-shrink: 0;
+  width: 100%;
+  aspect-ratio: 1/1;
   object-fit: cover;
   border: 2px solid #0D0D0D;
   display: block;
 }
 .exp-rel-nothumb {
-  width: 200px;
-  height: 200px;
-  flex-shrink: 0;
+  width: 100%;
+  aspect-ratio: 1/1;
   background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
   display: flex;
   align-items: center;
@@ -522,12 +533,18 @@
   font-size: 56px;
   border: 2px solid #0D0D0D;
 }
+/* Hashtaglar thumb-ın altında */
+.exp-rel-thumb-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 0 0;
+}
 .exp-rel-meta {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  flex: 1;
-  min-width: 0;
+  padding-top: 16px;
 }
 .exp-rel-type {
   font-family: 'IBM Plex Mono', monospace;
@@ -539,15 +556,18 @@
 }
 .exp-rel-title {
   font-family: 'Oswald', sans-serif;
-  font-size: 36px;
+  font-size: 28px;
   font-weight: 700;
   color: #0D0D0D;
   text-transform: uppercase;
   line-height: 1.1;
 }
 .exp-rel-artist {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 14px;
+  font-size: 13px;
   color: #555;
   letter-spacing: 0.5px;
 }
@@ -560,10 +580,23 @@
 }
 .exp-rel-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  margin-top: 4px;
+  margin-top: 6px;
 }
+
+/* Sağ tərəf — açıqlama */
+.exp-rel-right {
+  padding-top: 4px;
+}
+.exp-rel-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #333;
+  line-height: 1.75;
+  white-space: pre-line;
+}
+
 .exp-platform-btn {
   display: inline-flex;
   align-items: center;
@@ -573,7 +606,7 @@
   font-weight: 700;
   background: #FF3C00;
   color: #fff;
-  padding: 11px 22px;
+  padding: 10px 18px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   text-decoration: none;

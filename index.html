@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="css/modal.css" />
   <link rel="stylesheet" href="css/comments.css" />
   <link rel="stylesheet" href="css/artists.css" />
+  <link rel="stylesheet" href="css/gundem.css" />
   <link rel="stylesheet" href="css/responsive.css" />
 </head>
 <body>
@@ -27,7 +28,7 @@
       <a href="#" class="nav-link" data-section="albums">Relizlər</a>
       <a href="#" class="nav-link" data-section="interview">Podcastlar</a>
       <a href="#" class="nav-link" data-section="azrap">Sənətçilər</a>
-      <a href="#" class="nav-link" data-section="world">Əlaqə</a>
+      <a href="#" class="nav-link" data-section="world">Gündəm</a>
       <button class="nav-add-artist-btn" id="openArtistModalBtn">+ SƏNƏTÇİ</button>
       <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menyu">
         <span></span>
@@ -418,7 +419,7 @@
       <a href="#" class="drawer-link" data-section="albums">Relizlər</a>
       <a href="#" class="drawer-link" data-section="interview">Podcastlar</a>
       <a href="#" class="drawer-link" data-section="azrap">Sənətçilər</a>
-      <a href="#" class="drawer-link" data-section="world">Əlaqə</a>
+      <a href="#" class="drawer-link" data-section="world">Gündəm</a>
     </nav>
     <div class="drawer-footer">Hiphop, Rep və Daha Çoxu</div>
   </div>
@@ -492,6 +493,32 @@
         <div id="artistProfileContent"></div>
       </div>
     </main>
+  </div>
+
+  <!-- ===================== GÜNDƏM — YENİ MÖVZU MODAL ===================== -->
+  <div class="modal-overlay" id="gundemModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">YENİ MÖVZU AÇ</span>
+        <button class="modal-close" id="closeGundemModalBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">ADINIIZ <span class="form-label-note">(istəyə bağlı)</span></label>
+          <input type="text" id="gundemAuthorName" class="form-input" placeholder="Anonim qala bilərsiniz..." maxlength="40" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">MÖVZU BAŞLIĞI <span class="form-label-note">(məcburi)</span></label>
+          <input type="text" id="gundemTopicTitle" class="form-input" placeholder="Mövzunun başlığı..." maxlength="120" />
+          <span class="char-count" id="gundemTitleCount">0/120</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">AÇIQLAMA <span class="form-label-note">(istəyə bağlı)</span></label>
+          <textarea id="gundemTopicBody" class="form-textarea" placeholder="Mövzu haqqında ətraflı yaz..." style="min-height:100px;"></textarea>
+        </div>
+        <button class="publish-btn" id="gundemPublishBtn">MÖVZUNU AÇ</button>
+      </div>
+    </div>
   </div>
 
   <!-- JS -->

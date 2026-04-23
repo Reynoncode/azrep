@@ -190,8 +190,20 @@
         <div id="releaseForm" style="display:none">
           <button class="back-btn" id="backToTypeFromRelease">← Geri</button>
           <div class="form-group">
-            <label class="form-label">MAHNININ ADI</label>
-            <input type="text" id="releaseTitle" class="form-input" placeholder="Trekkin adı..." maxlength="120" />
+            <label class="form-label">RELİZ NÖVÜ</label>
+            <div class="release-type-btns" id="releaseTypeBtns">
+              <button class="release-type-btn" data-type="Single">Single</button>
+              <button class="release-type-btn" data-type="Feat">Feat</button>
+              <button class="release-type-btn" data-type="Album">Album</button>
+              <button class="release-type-btn" data-type="EP">EP</button>
+              <button class="release-type-btn" data-type="Mixtape">Mixtape</button>
+              <button class="release-type-btn" data-type="Klip">Klip</button>
+            </div>
+            <input type="hidden" id="releaseType" value="" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">MAHNININ / RELİZİN ADI</label>
+            <input type="text" id="releaseTitle" class="form-input" placeholder="Ad..." maxlength="120" />
             <span class="char-count" id="releaseTitleCount">0/120</span>
           </div>
           <div class="form-group">

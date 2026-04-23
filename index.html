@@ -28,6 +28,7 @@
       <a href="#" class="nav-link" data-section="interview">Podcastlar</a>
       <a href="#" class="nav-link" data-section="azrap">Sənətçilər</a>
       <a href="#" class="nav-link" data-section="world">Əlaqə</a>
+      <button class="nav-add-artist-btn" id="openArtistModalBtn">+ SƏNƏTÇİ</button>
       <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menyu">
         <span></span>
         <span></span>
@@ -409,6 +410,7 @@
     </div>
     <div class="drawer-add-news">
       <button class="add-news-btn" id="openModalBtn">+ XƏBƏR ƏLAVƏ ET</button>
+      <button class="add-news-btn add-artist-btn" id="openArtistModalBtnDrawer">+ SƏNƏTÇİ ƏLAVƏ ET</button>
     </div>
     <nav class="drawer-nav">
       <a href="#" class="drawer-link" data-section="home">Ana Səhifə</a>
@@ -419,6 +421,77 @@
       <a href="#" class="drawer-link" data-section="world">Əlaqə</a>
     </nav>
     <div class="drawer-footer">Hiphop, Rep və Daha Çoxu</div>
+  </div>
+
+  <!-- ===================== SƏNƏTÇİ ƏLAVƏ ET MODAL ===================== -->
+  <div class="modal-overlay" id="artistModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">YENİ SƏNƏTÇİ</span>
+        <button class="modal-close" id="closeArtistModalBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">SƏNƏTÇİ ADI <span class="form-label-note">(məcburi)</span></label>
+          <input type="text" id="artistName" class="form-input" placeholder="Sənətçi adı..." maxlength="80" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">REAL AD <span class="form-label-note">(istəyə bağlı)</span></label>
+          <input type="text" id="artistRealName" class="form-input" placeholder="Real adı..." maxlength="80" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">FOTO</label>
+          <div class="file-drop-zone" id="artistPhotoZone">
+            <input type="file" id="artistPhotoInput" accept="image/*" hidden />
+            <div class="drop-label" id="artistPhotoLabel">
+              <span>Foto seçmək üçün klikləyin</span>
+              <small>JPG, PNG, WEBP — Kare (1:1) tövsiyə olunur</small>
+            </div>
+          </div>
+          <div id="artistPhotoPreview" style="display:none;margin-top:10px;position:relative;">
+            <img id="artistPhotoImg" src="" style="width:100%;max-height:200px;object-fit:cover;border:2px solid #D0CEC9;" />
+            <button id="artistPhotoRemove" style="position:absolute;top:6px;right:6px;background:#000;color:#fff;border:none;padding:4px 8px;cursor:pointer;font-size:11px;">✕ Sil</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">BİOQRAFİYA <span class="form-label-note">(istəyə bağlı)</span></label>
+          <textarea id="artistBio" class="form-textarea" placeholder="Sənətçi haqqında qısa məlumat..." style="min-height:80px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">JANRLAR <span class="form-label-note">(vergüllə ayırın)</span></label>
+          <input type="text" id="artistGenres" class="form-input" placeholder="Rap, Trap, Drill..." maxlength="120" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">AYLIK DİNLƏYİCİ <span class="form-label-note">(istəyə bağlı)</span></label>
+          <input type="number" id="artistListeners" class="form-input" placeholder="0" min="0" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">SPOTIFY LİNKİ <span class="form-label-note">(istəyə bağlı)</span></label>
+          <input type="url" id="artistSpotify" class="form-input" placeholder="https://open.spotify.com/artist/..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">INSTAGRAM <span class="form-label-note">(istəyə bağlı)</span></label>
+          <input type="url" id="artistInstagram" class="form-input" placeholder="https://instagram.com/..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">YOUTUBE <span class="form-label-note">(istəyə bağlı)</span></label>
+          <input type="url" id="artistYoutube" class="form-input" placeholder="https://youtube.com/..." />
+        </div>
+        <button class="publish-btn" id="artistPublishBtn">SƏNƏTÇİ ƏLAVƏ ET</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SƏNƏTÇİ PROFİL SƏHİFƏSİ ===================== -->
+  <div id="artistProfilePage" style="display:none;">
+    <main class="site-main">
+      <div class="news-grid-section">
+        <div class="section-header">
+          <div class="section-tag" id="artistProfileTag">SƏNƏTÇİ PROFİLİ</div>
+        </div>
+        <div id="artistProfileContent"></div>
+      </div>
+    </main>
   </div>
 
   <!-- JS -->

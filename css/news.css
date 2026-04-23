@@ -368,3 +368,240 @@
   transition: background 0.15s;
 }
 .exp-link-btn:hover { background: #cc3000; }
+
+/* ============================================================
+   RELİZ KARTLARI — Spotify style
+   ============================================================ */
+.release-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  padding: 12px;
+  background: #FAF9F6;
+  border: 2px solid transparent;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+.release-card:hover {
+  background: #F0EDE8;
+  border-color: #E0DDD8;
+  transform: translateY(-2px);
+}
+.release-card.is-open {
+  border-color: #FF3C00 !important;
+  background: #fff8f6;
+}
+
+/* 1:1 Thumbnail */
+.rc-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #1a1a1a;
+  border: 2px solid #0D0D0D;
+}
+.rc-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s;
+}
+.release-card:hover .rc-thumb img { transform: scale(1.04); }
+
+.rc-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #444;
+  font-size: 40px;
+}
+
+/* Play overlay */
+.rc-play-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.release-card:hover .rc-play-overlay { background: rgba(0,0,0,0.35); }
+.rc-play-btn {
+  width: 48px;
+  height: 48px;
+  background: #FF3C00;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.2s, transform 0.2s;
+  padding-left: 4px;
+}
+.release-card:hover .rc-play-btn { opacity: 1; transform: scale(1); }
+
+/* Növ badge */
+.rc-type-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #FF3C00;
+  color: #fff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 3px 7px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+/* Info bölümü */
+.rc-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.rc-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0D0D0D;
+  line-height: 1.3;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.rc-artist {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 0.3px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ============================================================
+   RELİZ EXPANDED ROW
+   ============================================================ */
+.exp-rel-inner {
+  flex-direction: column !important;
+}
+.exp-rel-header {
+  display: flex;
+  gap: 32px;
+  padding: 28px 36px 28px;
+  align-items: flex-start;
+}
+.exp-rel-thumb {
+  width: 200px;
+  height: 200px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border: 2px solid #0D0D0D;
+  display: block;
+}
+.exp-rel-nothumb {
+  width: 200px;
+  height: 200px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  border: 2px solid #0D0D0D;
+}
+.exp-rel-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.exp-rel-type {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #FF3C00;
+  text-transform: uppercase;
+}
+.exp-rel-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: #0D0D0D;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.exp-rel-artist {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  color: #555;
+  letter-spacing: 0.5px;
+}
+.exp-rel-date {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: #AAA;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.exp-rel-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.exp-platform-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  background: #FF3C00;
+  color: #fff;
+  padding: 11px 22px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 2px solid #FF3C00;
+  transition: background 0.15s, color 0.15s;
+}
+.exp-platform-btn:hover { background: #cc3000; border-color: #cc3000; }
+
+/* ============================================================
+   MODAL — Reliz növü seçim düymələri
+   ============================================================ */
+.release-type-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.release-type-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 8px 16px;
+  border: 2px solid #D0CEC9;
+  background: #fff;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.12s;
+  text-transform: uppercase;
+}
+.release-type-btn:hover { border-color: #0D0D0D; color: #0D0D0D; }
+.release-type-btn.active { background: #FF3C00; border-color: #FF3C00; color: #fff; }

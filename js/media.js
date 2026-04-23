@@ -18,7 +18,7 @@ export function resetForm() {
   document.getElementById('newsBtnLabel').value = '';
   document.getElementById('titleCount').textContent    = '0/120';
   document.getElementById('btnLabelCount').textContent = '0/25';
-  document.querySelectorAll('.hashtag-input').forEach(i => i.value = '');
+  document.querySelectorAll('#newsHashtagList .hashtag-input').forEach(i => i.value = '');
   setCurrentImages([]);
   renderImagePreviews();
   document.getElementById('imageDropLabel').innerHTML =

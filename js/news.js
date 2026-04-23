@@ -3,7 +3,7 @@
 // ==============================
 
 import { db, collection, getDocs, addDoc, orderBy, query, serverTimestamp } from './firebase.js';
-import { news, setNews, currentImages, currentVideoFile, activeMediaType, currentSection } from './state.js';
+import { news, releases, podcasts, setNews, setReleases, setPodcasts, pushRelease, pushPodcast, currentImages, currentVideoFile, activeMediaType, currentSection } from './state.js';
 import { escHtml, compressImage, fileToBase64 } from './utils.js';
 import { closeNewsModal } from './ui.js';
 import { loadComments } from './comments.js';
@@ -14,11 +14,16 @@ import { loadComments } from './comments.js';
 export async function loadNews() {
   showGridLoading(true);
   try {
-    const q        = query(collection(db, 'news'), orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(q);
-    setNews(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    const [newsSnap, relSnap, podSnap] = await Promise.all([
+      getDocs(query(collection(db, 'news'),     orderBy('createdAt', 'desc'))),
+      getDocs(query(collection(db, 'releases'), orderBy('createdAt', 'desc'))),
+      getDocs(query(collection(db, 'podcasts'), orderBy('createdAt', 'desc'))),
+    ]);
+    setNews(newsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    setReleases(relSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    setPodcasts(podSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   } catch (err) {
-    console.error('Xəbərlər yüklənərkən xəta:', err);
+    console.error('Yüklənərkən xəta:', err);
     showGridError(err.message);
     return;
   } finally {
@@ -36,6 +41,14 @@ export function renderView() {
     if (featureSection) featureSection.style.display = 'none';
     if (sectionTag) sectionTag.textContent = 'BÜTÜN XƏBƏRLƏR';
     renderNewsGrid(news);
+  } else if (currentSection === 'albums') {
+    if (featureSection) featureSection.style.display = 'none';
+    if (sectionTag) sectionTag.textContent = 'RELİZLƏR';
+    renderReleasesGrid(releases);
+  } else if (currentSection === 'interview') {
+    if (featureSection) featureSection.style.display = 'none';
+    if (sectionTag) sectionTag.textContent = 'PODCASTLAR';
+    renderPodcastsGrid(podcasts);
   } else {
     if (featureSection) featureSection.style.display = '';
     if (sectionTag) sectionTag.textContent = 'SON XƏBƏRLƏR';
@@ -53,6 +66,169 @@ function showGridError(msg) {
   const grid = document.getElementById('newsGrid');
   if (!grid) return;
   grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#FF3C00;letter-spacing:2px;">XƏTA: ${escHtml(msg)}<br><br>Firebase config-i yoxlayın.</div>`;
+}
+
+// ============================================================
+// RELEASES GRID
+// ============================================================
+export function renderReleasesGrid(items) {
+  const grid = document.getElementById('newsGrid');
+  if (!grid) return;
+  grid.querySelectorAll('.news-expanded-row').forEach(r => r.remove());
+  if (!items || items.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#AAA;letter-spacing:2px;">HƏLƏ RELİZ ƏLAVƏ EDİLMƏYİB</div>`;
+    return;
+  }
+  grid.innerHTML = items.map(item => buildReleaseCard(item)).join('');
+  grid.querySelectorAll('.news-card[data-release-link]').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('.news-card-link-btn')) return;
+      const href = card.dataset.releaseLink;
+      if (href) window.open(href, '_blank');
+    });
+  });
+  grid.querySelectorAll('.news-card-link-btn[data-href]').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); window.open(btn.dataset.href, '_blank'); });
+  });
+}
+
+function buildReleaseCard(item) {
+  const thumb = item.thumbnail
+    ? `<img src="${item.thumbnail}" alt="${escHtml(item.title)}" />`
+    : `<div class="news-card-top-placeholder">NO COVER</div>`;
+
+  const tagsHTML = (item.tags || []).slice(0, 3).map(t => `<span class="news-card-tag">${escHtml(t)}</span>`).join('');
+  const linkBtn  = item.link
+    ? `<a class="news-card-link-btn" data-href="${escHtml(item.link)}" href="${escHtml(item.link)}" target="_blank" rel="noopener">DİNLƏ →</a>`
+    : '';
+
+  return `
+    <article class="news-card release-card" data-id="${item.id}" ${item.link ? `data-release-link="${escHtml(item.link)}"` : ''} style="cursor:${item.link ? 'pointer' : 'default'}">
+      <div class="news-card-top">
+        ${thumb}
+        <div class="release-badge">RELİZ</div>
+        <div class="news-card-title-overlay"><h3>${escHtml(item.title)}</h3></div>
+      </div>
+      <div class="news-card-bottom">
+        <p class="news-card-excerpt release-artist">🎤 ${escHtml(item.artist || '')}</p>
+        <div class="news-card-footer">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <span class="news-card-meta">${escHtml(item.date || '')}</span>
+            <div class="news-card-tags">${tagsHTML}</div>
+          </div>
+          ${linkBtn}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+// ============================================================
+// PODCASTS GRID
+// ============================================================
+export function renderPodcastsGrid(items) {
+  const grid = document.getElementById('newsGrid');
+  if (!grid) return;
+  grid.querySelectorAll('.news-expanded-row').forEach(r => r.remove());
+  if (!items || items.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#AAA;letter-spacing:2px;">HƏLƏ PODCAST ƏLAVƏ EDİLMƏYİB</div>`;
+    return;
+  }
+  grid.innerHTML = items.map(item => buildPodcastCard(item)).join('');
+  grid.querySelectorAll('.news-card').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('.news-card-link-btn')) return;
+      const id   = card.dataset.id;
+      const item = items.find(n => n.id === id);
+      if (item) toggleExpandedPodcast(card, item, grid);
+    });
+  });
+  grid.querySelectorAll('.news-card-link-btn[data-href]').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); window.open(btn.dataset.href, '_blank'); });
+  });
+}
+
+function buildPodcastCard(item) {
+  const thumb = item.thumbnail
+    ? `<img src="${item.thumbnail}" alt="${escHtml(item.title)}" />`
+    : `<div class="news-card-top-placeholder">🎙</div>`;
+
+  const tagsHTML = (item.tags || []).slice(0, 3).map(t => `<span class="news-card-tag">${escHtml(t)}</span>`).join('');
+  const linkBtn  = item.link
+    ? `<a class="news-card-link-btn" data-href="${escHtml(item.link)}" href="${escHtml(item.link)}" target="_blank" rel="noopener">İZLƏ →</a>`
+    : '';
+  const excerpt = (item.description || '').length > 100 ? item.description.slice(0, 100) + '…' : (item.description || '');
+
+  return `
+    <article class="news-card" data-id="${item.id}">
+      <div class="news-card-top">
+        ${thumb}
+        <div class="release-badge podcast-badge">${escHtml(item.category || 'PODCAST')}</div>
+        <div class="news-card-title-overlay"><h3>${escHtml(item.title)}</h3></div>
+      </div>
+      <div class="news-card-bottom">
+        <p class="news-card-excerpt">${escHtml(excerpt)}</p>
+        <div class="news-card-footer">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <span class="news-card-meta">${escHtml(item.date || '')}</span>
+            <div class="news-card-tags">${tagsHTML}</div>
+          </div>
+          ${linkBtn}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function toggleExpandedPodcast(card, item, grid) {
+  const existingRow = grid.querySelector('.news-expanded-row.open');
+  if (existingRow && existingRow.dataset.forId === item.id) {
+    closeExpandedRow(existingRow, card); return;
+  }
+  if (existingRow) {
+    const prevCard = grid.querySelector(`.news-card[data-id="${existingRow.dataset.forId}"]`);
+    closeExpandedRow(existingRow, prevCard);
+  }
+  card.classList.add('is-open');
+  const row  = buildExpandedPodcast(item);
+  const cols  = getGridColumns(grid);
+  const cards = Array.from(grid.querySelectorAll('.news-card'));
+  const idx   = cards.indexOf(card);
+  const rowLastIdx = Math.min(Math.floor(idx / cols) * cols + cols - 1, cards.length - 1);
+  cards[rowLastIdx].insertAdjacentElement('afterend', row);
+  requestAnimationFrame(() => requestAnimationFrame(() => row.classList.add('open')));
+  setTimeout(() => row.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80);
+  row.querySelector('.exp-close-row-btn').addEventListener('click', e => {
+    e.stopPropagation(); closeExpandedRow(row, card);
+  });
+}
+
+function buildExpandedPodcast(item) {
+  const thumb = item.thumbnail ? `<div class="exp-media-single"><img src="${item.thumbnail}" alt="${escHtml(item.title)}" /></div>` : '';
+  const tagsHTML = (item.tags || []).map(t => `<span class="exp-tag">${escHtml(t)}</span>`).join('');
+  const linkBtn  = item.link
+    ? `<a class="exp-link-btn" href="${escHtml(item.link)}" target="_blank" rel="noopener">İZLƏ / DİNLƏ →</a>`
+    : '';
+  const row = document.createElement('div');
+  row.className     = 'news-expanded-row';
+  row.dataset.forId = item.id;
+  row.innerHTML = `
+    <div class="exp-row-inner">
+      <button class="exp-close-row-btn">✕</button>
+      ${thumb}
+      <div class="exp-content">
+        <div class="exp-meta">${escHtml(item.category ? item.category.toUpperCase() : 'PODCAST')} · ${escHtml(item.date || '')}</div>
+        <h2 class="exp-title">${escHtml(item.title)}</h2>
+        <p class="exp-body">${escHtml(item.description || '')}</p>
+        <div class="exp-footer"><div class="exp-tags">${tagsHTML}</div>${linkBtn}</div>
+      </div>
+      <div class="exp-comments" id="expComments_${item.id}">
+        <div class="comments-loading-state">YÜKLƏNİR…</div>
+      </div>
+    </div>
+  `;
+  loadComments(item.id, row);
+  return row;
 }
 
 // ============================================================
@@ -242,6 +418,8 @@ function initExpandedSlider(row, item) {
 // ============================================================
 export function initPublish() {
   document.getElementById('publishBtn').addEventListener('click', publishNews);
+  document.getElementById('releasePublishBtn').addEventListener('click', publishRelease);
+  document.getElementById('podcastPublishBtn').addEventListener('click', publishPodcast);
 }
 
 async function publishNews() {
@@ -255,7 +433,7 @@ async function publishNews() {
   const body     = document.getElementById('newsBody').value.trim();
   const link     = document.getElementById('newsLink').value.trim();
   const btnLabel = document.getElementById('newsBtnLabel').value.trim() || 'Ətraflı oxu';
-  const tags     = [...document.querySelectorAll('.hashtag-input')]
+  const tags     = [...document.querySelectorAll('#newsHashtagList .hashtag-input')]
     .map(i => i.value.trim()).filter(Boolean)
     .map(t => t.startsWith('#') ? t : '#' + t);
   const now     = new Date();
@@ -286,5 +464,85 @@ async function publishNews() {
   } finally {
     publishBtn.disabled    = false;
     publishBtn.textContent = 'YAYIMLA';
+  }
+}
+
+async function publishRelease() {
+  const title  = document.getElementById('releaseTitle').value.trim();
+  const artist = document.getElementById('releaseArtist').value.trim();
+  const link   = document.getElementById('releaseLink').value.trim();
+  if (!title)  { alert('Mahnının adı boş ola bilməz!'); return; }
+  if (!artist) { alert('Sənətçi adı boş ola bilməz!'); return; }
+  if (!link)   { alert('Platform linki boş ola bilməz!'); return; }
+
+  const btn = document.getElementById('releasePublishBtn');
+  btn.disabled    = true;
+  btn.textContent = 'YÜKLƏNIR…';
+
+  const desc = document.getElementById('releaseDesc').value.trim();
+  const tags = [...document.querySelectorAll('#releaseHashtagList .hashtag-input')]
+    .map(i => i.value.trim()).filter(Boolean)
+    .map(t => t.startsWith('#') ? t : '#' + t);
+  const now     = new Date();
+  const dateStr = now.toLocaleString('az-AZ', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase();
+
+  try {
+    let thumbnail = null;
+    const thumbInput = document.getElementById('releaseThumbInput');
+    if (thumbInput.files[0]) {
+      const b64 = await fileToBase64(thumbInput.files[0]);
+      thumbnail = await compressImage(b64, 600, 0.8);
+    }
+    const docData = { title, artist, link, description: desc, tags, thumbnail, date: dateStr, postType: 'release', createdAt: serverTimestamp() };
+    const docRef  = await addDoc(collection(db, 'releases'), docData);
+    pushRelease({ id: docRef.id, ...docData });
+    renderView();
+    closeNewsModal();
+  } catch (err) {
+    console.error('Reliz yayımlanarkən xəta:', err);
+    alert('Xəta baş verdi: ' + err.message);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'YAYIMLA';
+  }
+}
+
+async function publishPodcast() {
+  const title    = document.getElementById('podcastTitle').value.trim();
+  const category = document.getElementById('podcastCategory').value;
+  const link     = document.getElementById('podcastLink').value.trim();
+  if (!title)    { alert('Başlıq boş ola bilməz!'); return; }
+  if (!category) { alert('Kateqoriya seçin!'); return; }
+  if (!link)     { alert('Platform linki boş ola bilməz!'); return; }
+
+  const btn = document.getElementById('podcastPublishBtn');
+  btn.disabled    = true;
+  btn.textContent = 'YÜKLƏNIR…';
+
+  const desc = document.getElementById('podcastDesc').value.trim();
+  const tags = [...document.querySelectorAll('#podcastHashtagList .hashtag-input')]
+    .map(i => i.value.trim()).filter(Boolean)
+    .map(t => t.startsWith('#') ? t : '#' + t);
+  const now     = new Date();
+  const dateStr = now.toLocaleString('az-AZ', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase();
+
+  try {
+    let thumbnail = null;
+    const thumbInput = document.getElementById('podcastThumbInput');
+    if (thumbInput.files[0]) {
+      const b64 = await fileToBase64(thumbInput.files[0]);
+      thumbnail = await compressImage(b64, 600, 0.8);
+    }
+    const docData = { title, category, link, description: desc, tags, thumbnail, date: dateStr, postType: 'podcast', createdAt: serverTimestamp() };
+    const docRef  = await addDoc(collection(db, 'podcasts'), docData);
+    pushPodcast({ id: docRef.id, ...docData });
+    renderView();
+    closeNewsModal();
+  } catch (err) {
+    console.error('Podcast yayımlanarkən xəta:', err);
+    alert('Xəta baş verdi: ' + err.message);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'YAYIMLA';
   }
 }

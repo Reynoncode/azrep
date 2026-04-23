@@ -2,9 +2,16 @@
 // ui.js — Nav, Drawer, Modal, Ticker
 // ==============================
 
-import { currentSection, setCurrentSection, setCurrentPostType } from './state.js';
+import { currentSection, setCurrentSection, setCurrentPostType, artists as artistsState } from './state.js';
 import { renderView } from './news.js';
 import { resetForm } from './media.js';
+
+// ── Modal-larda etiketlənmiş sənətçilər
+export const taggedArtistsByForm = {
+  news: [],
+  release: [],
+  podcast: []
+};
 
 export function setCurrentDate() {
   const el = document.getElementById('current-date');
@@ -21,6 +28,17 @@ export function initNav() {
   if (logoLink) {
     logoLink.addEventListener('click', e => {
       e.preventDefault();
+      // Sənətçi profili açıqdırsa bağla
+      const profilePage = document.getElementById('artistProfilePage');
+      if (profilePage && profilePage.classList.contains('profile-open')) {
+        const { closeArtistProfile } = window.__artistModule || {};
+        if (closeArtistProfile) { closeArtistProfile(); return; }
+        profilePage.classList.remove('profile-open');
+        const siteMain = document.querySelector('body > main.site-main');
+        const siteFooter = document.querySelector('.site-footer');
+        if (siteMain) siteMain.style.display = '';
+        if (siteFooter) siteFooter.style.display = '';
+      }
       setCurrentSection('home');
       renderView();
     });
@@ -173,6 +191,11 @@ export function initModal() {
       document.getElementById('releaseType').value = btn.dataset.type;
     });
   });
+
+  // Sənətçi tag axtarışı — bütün 3 form üçün
+  initArtistTagSearch('news', 'newsArtistSearch', 'newsArtistResults', 'newsArtistTagged');
+  initArtistTagSearch('release', 'releaseArtistSearch', 'releaseArtistResults', 'releaseArtistTagged');
+  initArtistTagSearch('podcast', 'podcastArtistSearch', 'podcastArtistResults', 'podcastArtistTagged');
 }
 
 export function closeNewsModal() {
@@ -180,7 +203,69 @@ export function closeNewsModal() {
   resetForm();
   resetReleaseForm();
   resetPodcastForm();
+  // Artist tag-ları sıfırla
+  clearArtistTags('news');
+  clearArtistTags('release');
+  clearArtistTags('podcast');
   showTypeScreen();
+}
+
+// ── Sənətçi tag axtarış
+function initArtistTagSearch(formKey, inputId, resultsId, taggedId) {
+  const input = document.getElementById(inputId);
+  const results = document.getElementById(resultsId);
+  const taggedList = document.getElementById(taggedId);
+  if (!input || !results || !taggedList) return;
+
+  function renderTagged() {
+    const arr = taggedArtistsByForm[formKey];
+    taggedList.innerHTML = arr.map((t, i) =>
+      `<span class="artist-tag-chip" data-idx="${i}">@${t.name}<button class="artist-tag-chip-remove" data-idx="${i}">✕</button></span>`
+    ).join('');
+    taggedList.querySelectorAll('.artist-tag-chip-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx);
+        taggedArtistsByForm[formKey].splice(idx, 1);
+        renderTagged();
+      });
+    });
+  }
+
+  input.addEventListener('input', () => {
+    const q = input.value.toLowerCase().trim();
+    if (!q) { results.style.display = 'none'; return; }
+    const matches = artistsState.filter(a => a.name.toLowerCase().includes(q)).slice(0, 6);
+    if (!matches.length) { results.style.display = 'none'; return; }
+    results.innerHTML = matches.map(a =>
+      `<div class="artist-tag-result-item" data-id="${a.id}" data-name="${a.name}" data-slug="${a.slug || ''}">${a.name}</div>`
+    ).join('');
+    results.style.display = '';
+    results.querySelectorAll('.artist-tag-result-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const id = item.dataset.id;
+        if (!taggedArtistsByForm[formKey].find(t => t.id === id)) {
+          taggedArtistsByForm[formKey].push({ id, name: item.dataset.name, slug: item.dataset.slug });
+          renderTagged();
+        }
+        results.style.display = 'none';
+        input.value = '';
+      });
+    });
+  });
+
+  document.addEventListener('click', e => {
+    if (!results.contains(e.target) && e.target !== input) results.style.display = 'none';
+  });
+
+  renderTagged();
+}
+
+function clearArtistTags(formKey) {
+  taggedArtistsByForm[formKey] = [];
+  const taggedEl = document.getElementById(formKey + 'ArtistTagged');
+  if (taggedEl) taggedEl.innerHTML = '';
+  const input = document.getElementById(formKey + 'ArtistSearch');
+  if (input) input.value = '';
 }
 
 function resetReleaseForm() {

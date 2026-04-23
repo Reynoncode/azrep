@@ -5,7 +5,7 @@
 import { db, collection, getDocs, addDoc, orderBy, query, serverTimestamp } from './firebase.js';
 import { news, releases, podcasts, setNews, setReleases, setPodcasts, pushRelease, pushPodcast, currentImages, currentVideoFile, activeMediaType, currentSection } from './state.js';
 import { escHtml, compressImage, fileToBase64 } from './utils.js';
-import { closeNewsModal } from './ui.js';
+import { closeNewsModal, taggedArtistsByForm } from './ui.js';
 import { loadComments } from './comments.js';
 import { renderArtistsSection } from './artists.js';
 import { renderGundemSection } from './gundem.js';
@@ -566,7 +566,8 @@ async function publishNews() {
       mediaType = 'video';
       mediaUrl  = await fileToBase64(currentVideoFile);
     }
-    const docData = { title, body, link, btnLabel, tags, date: dateStr, mediaType: mediaType || null, media: mediaUrl || null, images: imageUrls, createdAt: serverTimestamp() };
+    const taggedArtists = (taggedArtistsByForm.news || []).map(a => ({ id: a.id, name: a.name, slug: a.slug }));
+    const docData = { title, body, link, btnLabel, tags, taggedArtists, date: dateStr, mediaType: mediaType || null, media: mediaUrl || null, images: imageUrls, createdAt: serverTimestamp() };
     const docRef  = await addDoc(collection(db, 'news'), docData);
     news.unshift({ id: docRef.id, ...docData });
     renderView();
@@ -608,7 +609,8 @@ async function publishRelease() {
       const b64 = await fileToBase64(thumbInput.files[0]);
       thumbnail = await compressImage(b64, 600, 0.8);
     }
-    const docData = { title, artist, link, releaseType, description: desc, tags, thumbnail, date: dateStr, postType: 'release', createdAt: serverTimestamp() };
+    const taggedArtists = (taggedArtistsByForm.release || []).map(a => ({ id: a.id, name: a.name, slug: a.slug }));
+    const docData = { title, artist, link, releaseType, description: desc, tags, taggedArtists, thumbnail, date: dateStr, postType: 'release', createdAt: serverTimestamp() };
     const docRef  = await addDoc(collection(db, 'releases'), docData);
     pushRelease({ id: docRef.id, ...docData });
     renderView();
@@ -648,7 +650,8 @@ async function publishPodcast() {
       const b64 = await fileToBase64(thumbInput.files[0]);
       thumbnail = await compressImage(b64, 600, 0.8);
     }
-    const docData = { title, category, link, description: desc, tags, thumbnail, date: dateStr, postType: 'podcast', createdAt: serverTimestamp() };
+    const taggedArtists = (taggedArtistsByForm.podcast || []).map(a => ({ id: a.id, name: a.name, slug: a.slug }));
+    const docData = { title, category, link, description: desc, tags, taggedArtists, thumbnail, date: dateStr, postType: 'podcast', createdAt: serverTimestamp() };
     const docRef  = await addDoc(collection(db, 'podcasts'), docData);
     pushPodcast({ id: docRef.id, ...docData });
     renderView();

@@ -5,11 +5,14 @@
 import { setCurrentDate, initNav, initTicker, initModal, initDrawer } from './ui.js';
 import { initImageUpload, initVideoUpload, initMediaTabs, initLinkInput } from './media.js';
 import { initPublish, loadNews } from './news.js';
-import { initArtistModal } from './artists.js';
+import { initArtistModal, closeArtistProfile } from './artists.js';
 import { initGundemModal } from './gundem.js';
 import { initSearch } from './search.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Logo click üçün closeArtistProfile-i qlobal et
+  window.__artistModule = { closeArtistProfile };
+
   setCurrentDate();
   initNav();
   initTicker();

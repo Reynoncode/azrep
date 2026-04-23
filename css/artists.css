@@ -1,0 +1,410 @@
+/* ==============================
+   artists.css — Sənətçilər Bölümü
+   ============================== */
+
+/* ── Yüklənir ── */
+.artists-loading {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: #AAA;
+  letter-spacing: 2px;
+  text-align: center;
+  padding: 60px 0;
+  text-transform: uppercase;
+}
+
+/* ── 3-sütunlu əsas layout ── */
+.artists-page {
+  display: grid;
+  grid-template-columns: 240px 1fr 220px;
+  gap: 0;
+  min-height: 600px;
+  align-items: flex-start;
+}
+
+/* ============================================================
+   SOL SİDEBAR — Son paylaşımlar
+   ============================================================ */
+.artists-sidebar-left {
+  border-right: 2px solid #0D0D0D;
+  padding: 0 20px 32px 0;
+}
+.artists-sidebar-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: #AAA;
+  text-transform: uppercase;
+  padding: 0 0 14px;
+  border-bottom: 2px solid #0D0D0D;
+  margin-bottom: 16px;
+}
+.artists-recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.artists-empty {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: #AAA;
+  font-style: italic;
+  padding: 12px 0;
+}
+
+/* Keçid kartı */
+.recent-post-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  transition: background 0.12s;
+  position: relative;
+}
+.recent-post-card:last-child { border-bottom: none; }
+.recent-post-card:hover { background: #F5F2ED; }
+
+.recent-post-thumb {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1.5px solid #0D0D0D;
+  display: block;
+}
+.recent-post-nothumb {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  border: 1.5px solid #0D0D0D;
+}
+.recent-post-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.recent-post-type {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.recent-post-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0D0D0D;
+  line-height: 1.3;
+  word-break: break-word;
+}
+.recent-post-date {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  color: #AAA;
+  letter-spacing: 0.5px;
+}
+.recent-post-arrow {
+  font-size: 18px;
+  color: #CCC;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.recent-post-card:hover .recent-post-arrow { color: #FF3C00; }
+
+/* ============================================================
+   ORTA — Sənətçi kartları
+   ============================================================ */
+.artists-main {
+  padding: 0 28px 32px;
+}
+.artists-main-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #0D0D0D;
+  margin-bottom: 20px;
+}
+.artists-main-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #0D0D0D;
+}
+.artists-count {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #AAA;
+  letter-spacing: 1px;
+}
+.artists-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.artists-empty-center {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: #AAA;
+  font-style: italic;
+  text-align: center;
+  padding: 40px 0;
+}
+
+/* ── Sənətçi kartı ── */
+.artist-card {
+  border-bottom: 2px solid #0D0D0D;
+  transition: background 0.13s;
+}
+.artist-card:first-child { border-top: 2px solid #0D0D0D; }
+.artist-card:hover { background: #F5F2ED; }
+
+.artist-card-inner {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 20px;
+  padding: 18px 0;
+  align-items: flex-start;
+}
+.artist-card-photo-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.artist-card-img {
+  width: 110px;
+  height: 110px;
+  object-fit: cover;
+  border: 2px solid #0D0D0D;
+  border-radius: 50%;
+  display: block;
+}
+.artist-card-img-placeholder {
+  width: 110px;
+  height: 110px;
+  background: linear-gradient(135deg, #1a1a1a, #333);
+  border-radius: 50%;
+  border: 2px solid #0D0D0D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Oswald', sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: #fff;
+}
+.artist-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.artist-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.artist-card-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0D0D0D;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  line-height: 1.1;
+}
+.artist-card-realname {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
+.artist-card-socials {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.artist-social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1.5px solid #D0CEC9;
+  color: #555;
+  text-decoration: none;
+  transition: border-color 0.13s, color 0.13s, background 0.13s;
+  border-radius: 2px;
+}
+.artist-social-link:hover { border-color: #0D0D0D; background: #0D0D0D; color: #fff; }
+
+.artist-card-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.artist-genre-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #555;
+  border: 1.5px solid #D0CEC9;
+  padding: 3px 8px;
+}
+.artist-card-bio {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: #444;
+  line-height: 1.65;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.artist-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+.artist-listeners {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #888;
+  letter-spacing: 0.5px;
+}
+.artist-spotify-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+  background: #1DB954;
+  border: 2px solid #1DB954;
+  padding: 7px 14px;
+  text-decoration: none;
+  transition: background 0.13s, border-color 0.13s;
+}
+.artist-spotify-btn:hover { background: #17a349; border-color: #17a349; }
+
+/* ============================================================
+   SAĞ SİDEBAR — Top 10
+   ============================================================ */
+.artists-sidebar-right {
+  border-left: 2px solid #0D0D0D;
+  padding: 0 0 32px 20px;
+}
+.artists-top-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.top-artist-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  cursor: default;
+  transition: background 0.12s;
+}
+.top-artist-row:last-child { border-bottom: none; }
+.top-artist-row[data-href]:hover { background: #F5F2ED; cursor: pointer; }
+
+.top-rank {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #CCC;
+  min-width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.top-rank-1 { color: #FF3C00; font-size: 14px; }
+.top-rank-top { color: #0D0D0D; }
+
+.top-artist-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1.5px solid #0D0D0D;
+  display: block;
+}
+.top-artist-avatar-ph {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  border: 1.5px solid #0D0D0D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.top-artist-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.top-artist-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0D0D0D;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.top-artist-listeners {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: #AAA;
+  letter-spacing: 0.3px;
+}
+.top-artist-spotify {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  color: #1DB954;
+  text-decoration: none;
+  transition: opacity 0.12s;
+  opacity: 0.7;
+}
+.top-artist-spotify:hover { opacity: 1; }

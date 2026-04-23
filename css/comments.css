@@ -178,6 +178,12 @@
 .comment-error-msg.visible { display: block; }
 
 /* Comment list */
+.comments-collapsible {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 4px;
+}
 .comment-list { display: flex; flex-direction: column; gap: 0; }
 .comment-item {
   display: flex;

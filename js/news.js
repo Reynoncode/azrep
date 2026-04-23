@@ -153,24 +153,28 @@ function buildExpandedRelease(item) {
   const tagsHTML = (item.tags || []).map(t => `<span class="exp-tag">${escHtml(t)}</span>`).join('');
   const typeLabel = item.releaseType ? `<span class="exp-rel-type">${escHtml(item.releaseType)}</span>` : '';
 
-  // Platform linki — platformu URL-dən tanı
-  let platformIcon = '🔗', platformName = 'DİNLƏ';
-  if (item.link) {
-    const l = item.link.toLowerCase();
-    if (l.includes('spotify'))    { platformIcon = ''; platformName = 'Spotify-də Aç'; }
-    else if (l.includes('youtube')) { platformIcon = ''; platformName = 'YouTube-da İzlə'; }
-    else if (l.includes('soundcloud')) { platformIcon = ''; platformName = 'SoundCloud-da Dinlə'; }
-    else if (l.includes('apple'))  { platformIcon = ''; platformName = 'Apple Music-də Aç'; }
-    else if (l.includes('deezer')) { platformIcon = '🎵'; platformName = 'Deezer-də Aç'; }
-    else if (l.includes('tidal'))  { platformIcon = '🎵'; platformName = 'Tidal-da Aç'; }
-  }
-
-  const linkBtn = item.link
-    ? `<a class="exp-platform-btn" href="${escHtml(item.link)}" target="_blank" rel="noopener">${platformIcon} ${platformName}</a>`
+  // Platform linklərini topla — birdən çox ola bilər (vergüllə ayrılmış)
+  const links = (item.link || '').split(',').map(s => s.trim()).filter(Boolean);
+  const platformDefs = [
+    { key: 'spotify',    icon: '🟢', name: 'Spotify' },
+    { key: 'youtube',    icon: '▶',  name: 'YouTube' },
+    { key: 'soundcloud', icon: '☁',  name: 'SoundCloud' },
+    { key: 'apple',      icon: '🎵', name: 'Apple Music' },
+    { key: 'deezer',     icon: '🎵', name: 'Deezer' },
+    { key: 'tidal',      icon: '🎵', name: 'Tidal' },
+  ];
+  const linkBtns = links.length > 0
+    ? links.map(url => {
+        const l = url.toLowerCase();
+        const p = platformDefs.find(d => l.includes(d.key));
+        const name = p ? p.name : 'DİNLƏ';
+        const icon = p ? p.icon : '🔗';
+        return `<a class="exp-platform-btn" href="${escHtml(url)}" target="_blank" rel="noopener">${icon} ${name}</a>`;
+      }).join('')
     : '';
 
   const descHTML = item.description
-    ? `<p class="exp-body">${escHtml(item.description)}</p>`
+    ? `<div class="exp-rel-desc">${escHtml(item.description)}</div>`
     : '';
 
   const row = document.createElement('div');
@@ -179,19 +183,31 @@ function buildExpandedRelease(item) {
   row.innerHTML = `
     <div class="exp-row-inner exp-rel-inner">
       <button class="exp-close-row-btn">✕</button>
-      <div class="exp-rel-header">
-        ${thumb}
-        <div class="exp-rel-meta">
-          ${typeLabel}
-          <h2 class="exp-rel-title">${escHtml(item.title)}</h2>
-          <div class="exp-rel-artist">🎤 ${escHtml(item.artist || '')}</div>
-          <div class="exp-rel-date">${escHtml(item.date || '')}</div>
-          ${descHTML}
-          <div class="exp-rel-actions">
-            ${linkBtn}
+      <div class="exp-rel-layout">
+
+        <!-- SOL: thumb + hashtag + meta + linklər -->
+        <div class="exp-rel-left">
+          <div class="exp-rel-thumb-wrap">
+            ${thumb}
+            <div class="exp-rel-thumb-tags">${tagsHTML}</div>
           </div>
-          <div class="exp-tags" style="margin-top:12px;">${tagsHTML}</div>
+          <div class="exp-rel-meta">
+            ${typeLabel}
+            <h2 class="exp-rel-title">${escHtml(item.title)}</h2>
+            <div class="exp-rel-artist">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              ${escHtml(item.artist || '')}
+            </div>
+            <div class="exp-rel-date">${escHtml(item.date || '')}</div>
+            ${linkBtns ? `<div class="exp-rel-actions">${linkBtns}</div>` : ''}
+          </div>
         </div>
+
+        <!-- SAĞ: açıqlama -->
+        <div class="exp-rel-right">
+          ${descHTML}
+        </div>
+
       </div>
       <div class="exp-comments" id="expComments_${item.id}">
         <div class="comments-loading-state">YÜKLƏNİR…</div>

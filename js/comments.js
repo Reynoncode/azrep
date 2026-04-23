@@ -26,35 +26,37 @@ export async function loadComments(newsId, row) {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
         YORUMLAR ${total > 0 ? `<span class="comment-count-badge">${total}</span>` : ''}
       </div>
-      ${total > 0 ? `<button class="comments-toggle-btn" data-open="false" data-news-id="${newsId}">
+      <button class="comments-toggle-btn" data-open="false" data-news-id="${newsId}">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        ${total} yorumu göstər
-      </button>` : ''}
+        ${total > 0 ? `${total} yorumu göstər` : 'Yorum əlavə et'}
+      </button>
     </div>
 
-    <div class="comment-add-form">
-      <div class="comment-form-avatar">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-      </div>
-      <div class="comment-form-fields">
-        <input type="text" class="comment-name-input main-name-input" placeholder="Adınız" maxlength="40" autocomplete="off" />
-        <textarea class="comment-text-input main-text-input" placeholder="Yorum əlavə edin..." maxlength="500" rows="1"></textarea>
-        <div class="comment-form-actions main-form-actions" style="display:none;">
-          <span class="comment-error-msg main-error-msg"></span>
-          <div class="comment-form-btns">
-            <button class="comment-cancel-btn main-cancel-btn">Ləğv et</button>
-            <button class="comment-submit-btn main-submit-btn" data-parent-id="" data-news-id="${newsId}">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
+    <div class="comments-collapsible" id="commentsCollapsible_${newsId}" style="display:none;">
+      <div class="comment-add-form">
+        <div class="comment-form-avatar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <div class="comment-form-fields">
+          <input type="text" class="comment-name-input main-name-input" placeholder="Adınız" maxlength="40" autocomplete="off" />
+          <textarea class="comment-text-input main-text-input" placeholder="Yorum əlavə edin..." maxlength="500" rows="1"></textarea>
+          <div class="comment-form-actions main-form-actions" style="display:none;">
+            <span class="comment-error-msg main-error-msg"></span>
+            <div class="comment-form-btns">
+              <button class="comment-cancel-btn main-cancel-btn">Ləğv et</button>
+              <button class="comment-submit-btn main-submit-btn" data-parent-id="" data-news-id="${newsId}">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="comment-list" id="commentList_${newsId}" style="display:none;">
-      ${topLevel.length === 0
-        ? '<div class="comment-empty">Hələ yorum yoxdur. İlk yorumu sən yaz!</div>'
-        : topLevel.map(c => buildCommentItemHTML(c, replies, newsId)).join('')}
+      <div class="comment-list" id="commentList_${newsId}">
+        ${topLevel.length === 0
+          ? '<div class="comment-empty">Hələ yorum yoxdur. İlk yorumu sən yaz!</div>'
+          : topLevel.map(c => buildCommentItemHTML(c, replies, newsId)).join('')}
+      </div>
     </div>
   `;
 
@@ -71,16 +73,17 @@ export async function loadComments(newsId, row) {
     mainName.value = ''; mainName.classList.remove('error');
   });
 
-  // Yorumlar toggle
-  const toggleBtn = container.querySelector('.comments-toggle-btn');
-  const listEl    = container.querySelector(`#commentList_${newsId}`);
-  if (toggleBtn && listEl) {
+  // Yorumlar toggle — bütün collapsible bölməni açır/bağlayır
+  const toggleBtn    = container.querySelector('.comments-toggle-btn');
+  const collapsible  = container.querySelector(`#commentsCollapsible_${newsId}`);
+  if (toggleBtn && collapsible) {
     toggleBtn.addEventListener('click', () => {
       const isOpen = toggleBtn.dataset.open === 'true';
-      listEl.style.display   = isOpen ? 'none' : 'flex';
+      collapsible.style.display  = isOpen ? 'none' : 'flex';
       toggleBtn.dataset.open = isOpen ? 'false' : 'true';
+      const cnt = parseInt(container.querySelector('.comment-count-badge')?.textContent || '0');
       toggleBtn.innerHTML = isOpen
-        ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg> ${total} yorumu göstər`
+        ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg> ${cnt > 0 ? cnt + ' yorumu göstər' : 'Yorum əlavə et'}`
         : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> Yorumları gizlət`;
     });
   }
@@ -132,6 +135,10 @@ export async function loadComments(newsId, row) {
         addReplyToDOM(container, parentId, newComment, nId);
       } else {
         const listEl2 = container.querySelector(`#commentList_${nId}`);
+        const collapsible2 = container.querySelector(`#commentsCollapsible_${nId}`);
+        if (collapsible2) collapsible2.style.display = 'flex';
+        const toggleBtn2 = container.querySelector('.comments-toggle-btn');
+        if (toggleBtn2) { toggleBtn2.dataset.open = 'true'; }
         if (listEl2) {
           listEl2.style.display = 'flex';
           const emptyEl = listEl2.querySelector('.comment-empty');
@@ -284,7 +291,7 @@ function initNewCommentEvents(el, container, newsId) {
 function updateCommentsToggle(container, newsId, delta) {
   const badge   = container.querySelector('.comment-count-badge');
   const titleEl = container.querySelector('.exp-comments-title');
-  const listEl  = container.querySelector(`#commentList_${newsId}`);
+  const collapsible = container.querySelector(`#commentsCollapsible_${newsId}`);
   const currentCount = parseInt(badge?.textContent || '0') + delta;
 
   if (badge) {
@@ -296,24 +303,20 @@ function updateCommentsToggle(container, newsId, delta) {
     titleEl.appendChild(b);
   }
 
-  let toggleBtn = container.querySelector('.comments-toggle-btn');
-  if (!toggleBtn && currentCount > 0 && titleEl) {
-    toggleBtn = document.createElement('button');
-    toggleBtn.className        = 'comments-toggle-btn';
-    toggleBtn.dataset.open     = 'true';
-    toggleBtn.dataset.newsId   = newsId;
-    titleEl.parentElement.appendChild(toggleBtn);
-    toggleBtn.addEventListener('click', () => {
-      const isOpen = toggleBtn.dataset.open === 'true';
-      if (listEl) listEl.style.display = isOpen ? 'none' : 'flex';
-      toggleBtn.dataset.open = isOpen ? 'false' : 'true';
-      const cnt = parseInt(container.querySelector('.comment-count-badge')?.textContent || '0');
-      toggleBtn.innerHTML = isOpen
-        ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg> ${cnt} yorumu göstər`
-        : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> Yorumları gizlət`;
-    });
-  }
-  if (toggleBtn && toggleBtn.dataset.open === 'true') {
-    toggleBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> Yorumları gizlət`;
+  const toggleBtn = container.querySelector('.comments-toggle-btn');
+  if (toggleBtn) {
+    const isOpen = toggleBtn.dataset.open === 'true';
+    // Açıqdırsa gizlət yazısını güncəllə
+    if (isOpen) {
+      toggleBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> Yorumları gizlət`;
+    } else {
+      toggleBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg> ${currentCount} yorumu göstər`;
+    }
+    // Collapsible açıq deyilsə aç
+    if (collapsible && collapsible.style.display === 'none') {
+      collapsible.style.display = 'flex';
+      toggleBtn.dataset.open = 'true';
+      toggleBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> Yorumları gizlət`;
+    }
   }
 }

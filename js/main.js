@@ -6,6 +6,7 @@ import { setCurrentDate, initNav, initTicker, initModal, initDrawer } from './ui
 import { initImageUpload, initVideoUpload, initMediaTabs, initLinkInput } from './media.js';
 import { initPublish, loadNews } from './news.js';
 import { initArtistModal } from './artists.js';
+import { initGundemModal } from './gundem.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   setCurrentDate();
@@ -19,5 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initLinkInput();
   initPublish();
   initArtistModal();
+  initGundemModal();
   loadNews();
 });

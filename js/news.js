@@ -8,6 +8,7 @@ import { escHtml, compressImage, fileToBase64 } from './utils.js';
 import { closeNewsModal } from './ui.js';
 import { loadComments } from './comments.js';
 import { renderArtistsSection } from './artists.js';
+import { renderGundemSection } from './gundem.js';
 
 // ============================================================
 // LOAD & RENDER
@@ -61,6 +62,14 @@ export function renderView() {
     if (grid) {
       grid.style.gridTemplateColumns = '1fr';
       renderArtistsSection(grid);
+    }
+  } else if (currentSection === 'world') {
+    if (featureSection) featureSection.style.display = 'none';
+    if (newsGridSection) newsGridSection.style.paddingTop = '0';
+    if (sectionTag) sectionTag.textContent = '';
+    if (grid) {
+      grid.style.gridTemplateColumns = '1fr';
+      renderGundemSection(grid);
     }
   } else {
     if (featureSection) featureSection.style.display = '';

@@ -3,6 +3,10 @@
    ============================== */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body { background-color: #FAF9F6; color: #0D0D0D; font-family: 'Inter', sans-serif; min-height: 100vh; }
+html { scroll-behavior: smooth; height: 100%; }
+body { background-color: #FAF9F6; color: #0D0D0D; font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+.site-main { flex: 1; }
+#artistProfilePage { flex: 1; display: none; flex-direction: column; }
+#artistProfilePage.profile-open { display: flex; }
+#artistProfilePage .site-main { flex: 1; }
 a { text-decoration: none; color: inherit; }

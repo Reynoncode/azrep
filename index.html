@@ -32,7 +32,7 @@
 
       <!-- Orta: Logo + Axtarış -->
       <div class="nav-center">
-        <a href="#" class="nav-logo-link" id="navLogoLink">HIPRHYME</a>
+        <a href="#" class="nav-logo-link" id="navLogoLink">AZREP</a>
         <div class="nav-search-wrap" id="navSearchWrap">
           <input type="text" class="nav-search-input" id="navSearchInput" placeholder="Axtar..." autocomplete="off" />
           <svg class="nav-search-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -169,6 +169,14 @@
             <button class="add-hashtag-btn" data-target="newsHashtagList">+ Hashtag əlavə et</button>
           </div>
           <div class="form-group">
+            <label class="form-label">SƏNƏTÇİLƏR <span class="form-label-note">(istəyə bağlı — etiketlə)</span></label>
+            <div class="artist-tag-search-wrap">
+              <input type="text" class="form-input" id="newsArtistSearch" placeholder="Sənətçi adı axtar..." autocomplete="off" />
+              <div class="artist-tag-results" id="newsArtistResults" style="display:none;"></div>
+            </div>
+            <div class="artist-tagged-list" id="newsArtistTagged"></div>
+          </div>
+          <div class="form-group">
             <label class="form-label">MEDIA</label>
             <div class="media-tabs">
               <button class="media-tab active" data-tab="image">🖼 Şəkil</button>
@@ -260,6 +268,14 @@
             </div>
             <button class="add-hashtag-btn" data-target="releaseHashtagList">+ Hashtag əlavə et</button>
           </div>
+          <div class="form-group">
+            <label class="form-label">SƏNƏTÇİLƏR <span class="form-label-note">(istəyə bağlı — etiketlə)</span></label>
+            <div class="artist-tag-search-wrap">
+              <input type="text" class="form-input" id="releaseArtistSearch" placeholder="Sənətçi adı axtar..." autocomplete="off" />
+              <div class="artist-tag-results" id="releaseArtistResults" style="display:none;"></div>
+            </div>
+            <div class="artist-tagged-list" id="releaseArtistTagged"></div>
+          </div>
           <button class="publish-btn" id="releasePublishBtn">YAYIMLA</button>
         </div>
 
@@ -312,6 +328,14 @@
               <input type="text" class="form-input hashtag-input" placeholder="#müsahibə" maxlength="30" />
             </div>
             <button class="add-hashtag-btn" data-target="podcastHashtagList">+ Hashtag əlavə et</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">SƏNƏTÇİLƏR <span class="form-label-note">(istəyə bağlı — etiketlə)</span></label>
+            <div class="artist-tag-search-wrap">
+              <input type="text" class="form-input" id="podcastArtistSearch" placeholder="Sənətçi adı axtar..." autocomplete="off" />
+              <div class="artist-tag-results" id="podcastArtistResults" style="display:none;"></div>
+            </div>
+            <div class="artist-tagged-list" id="podcastArtistTagged"></div>
           </div>
           <button class="publish-btn" id="podcastPublishBtn">YAYIMLA</button>
         </div>
@@ -500,7 +524,7 @@
   </div>
 
   <!-- ===================== SƏNƏTÇİ PROFİL SƏHİFƏSİ ===================== -->
-  <div id="artistProfilePage" style="display:none;">
+  <div id="artistProfilePage">
     <main class="site-main">
       <div class="news-grid-section">
         <div class="section-header">

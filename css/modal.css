@@ -242,3 +242,138 @@
 .trim-row > div { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .trim-row span { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
 .trim-input { text-align: center; }
+
+/* --- POST TYPE SEÇİM EKRANI --- */
+.post-type-lead {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.post-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.post-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 12px;
+  border: 2px solid #D0CEC9;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.post-type-card:hover {
+  border-color: #FF3C00;
+  background: #fff8f6;
+  transform: translateY(-2px);
+}
+
+.post-type-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.post-type-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #0D0D0D;
+}
+
+.post-type-desc {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: #888;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
+}
+
+/* --- GERİ DÜYMƏSİ --- */
+.back-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 0 0 12px 0;
+  transition: color 0.12s;
+  display: block;
+}
+.back-btn:hover { color: #FF3C00; }
+
+/* --- HASHTAG ƏLAVƏ ET DÜYMƏSİ --- */
+.add-hashtag-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: none;
+  border: 1px dashed #D0CEC9;
+  color: #999;
+  cursor: pointer;
+  padding: 6px 12px;
+  margin-top: 6px;
+  transition: all 0.12s;
+  text-transform: uppercase;
+  align-self: flex-start;
+}
+.add-hashtag-btn:hover { border-color: #FF3C00; color: #FF3C00; }
+
+/* --- HASHTAG GRİD - WRAP EDİLSİN --- */
+.hashtag-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.hashtag-input { flex: 1; min-width: 120px; }
+
+/* --- FORM LABEL NOTE --- */
+.form-label-note {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #AAA;
+  font-size: 9px;
+}
+
+/* --- RELİZ BADGE --- */
+.release-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #FF3C00;
+  color: #fff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 3px 8px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+.podcast-badge { background: #0D0D0D; }
+
+/* --- RELİZ ARTIST --- */
+.release-artist {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: #555;
+  letter-spacing: 0.5px;
+}
+
+/* news-card-top nisbəti üçün */
+.release-card .news-card-top { position: relative; }
+

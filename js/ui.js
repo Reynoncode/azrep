@@ -15,15 +15,16 @@ export function setCurrentDate() {
 }
 
 export function initNav() {
-  document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', e => {
+  // Nav linklər artıq yoxdur — drawer linklər ui.js initDrawer-da idarə olunur
+  // Logo linki ana səhifəyə aparır
+  const logoLink = document.getElementById('navLogoLink');
+  if (logoLink) {
+    logoLink.addEventListener('click', e => {
       e.preventDefault();
-      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-      link.classList.add('active');
-      setCurrentSection(link.dataset.section);
+      setCurrentSection('home');
       renderView();
     });
-  });
+  }
 }
 
 export function initTicker() {
@@ -240,9 +241,8 @@ export function initDrawer() {
   document.querySelectorAll('.drawer-link').forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
-      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-      const matchingNav = document.querySelector(`.nav-link[data-section="${link.dataset.section}"]`);
-      if (matchingNav) matchingNav.classList.add('active');
+      document.querySelectorAll('.drawer-link').forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
       setCurrentSection(link.dataset.section);
       renderView();
       closeDrawer();

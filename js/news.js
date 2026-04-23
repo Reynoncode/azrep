@@ -36,6 +36,10 @@ export function renderView() {
   const featureSection  = document.querySelector('.feature-section');
   const newsGridSection = document.querySelector('.news-grid-section');
   const sectionTag      = newsGridSection?.querySelector('.section-tag');
+  const grid            = document.getElementById('newsGrid');
+
+  // Default grid sütununu sıfırla
+  if (grid) grid.style.gridTemplateColumns = '';
 
   if (currentSection === 'news') {
     if (featureSection) featureSection.style.display = 'none';
@@ -79,48 +83,122 @@ export function renderReleasesGrid(items) {
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#AAA;letter-spacing:2px;">HƏLƏ RELİZ ƏLAVƏ EDİLMƏYİB</div>`;
     return;
   }
+  // Release grid 5 sütun
+  grid.style.gridTemplateColumns = 'repeat(5, 1fr)';
   grid.innerHTML = items.map(item => buildReleaseCard(item)).join('');
-  grid.querySelectorAll('.news-card[data-release-link]').forEach(card => {
-    card.addEventListener('click', e => {
-      if (e.target.closest('.news-card-link-btn')) return;
-      const href = card.dataset.releaseLink;
-      if (href) window.open(href, '_blank');
+  grid.querySelectorAll('.release-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id   = card.dataset.id;
+      const item = items.find(r => r.id === id);
+      if (item) toggleExpandedRelease(card, item, grid);
     });
-  });
-  grid.querySelectorAll('.news-card-link-btn[data-href]').forEach(btn => {
-    btn.addEventListener('click', e => { e.stopPropagation(); window.open(btn.dataset.href, '_blank'); });
   });
 }
 
 function buildReleaseCard(item) {
   const thumb = item.thumbnail
     ? `<img src="${item.thumbnail}" alt="${escHtml(item.title)}" />`
-    : `<div class="news-card-top-placeholder">NO COVER</div>`;
+    : `<div class="rc-thumb-placeholder"><span>♪</span></div>`;
 
-  const tagsHTML = (item.tags || []).slice(0, 3).map(t => `<span class="news-card-tag">${escHtml(t)}</span>`).join('');
-  const linkBtn  = item.link
-    ? `<a class="news-card-link-btn" data-href="${escHtml(item.link)}" href="${escHtml(item.link)}" target="_blank" rel="noopener">DİNLƏ →</a>`
-    : '';
+  const typeLabel = item.releaseType ? `<span class="rc-type-badge">${escHtml(item.releaseType)}</span>` : '';
 
   return `
-    <article class="news-card release-card" data-id="${item.id}" ${item.link ? `data-release-link="${escHtml(item.link)}"` : ''} style="cursor:${item.link ? 'pointer' : 'default'}">
-      <div class="news-card-top">
+    <article class="release-card" data-id="${item.id}">
+      <div class="rc-thumb">
         ${thumb}
-        <div class="release-badge">RELİZ</div>
-        <div class="news-card-title-overlay"><h3>${escHtml(item.title)}</h3></div>
+        ${typeLabel}
+        <div class="rc-play-overlay"><span class="rc-play-btn">▶</span></div>
       </div>
-      <div class="news-card-bottom">
-        <p class="news-card-excerpt release-artist">🎤 ${escHtml(item.artist || '')}</p>
-        <div class="news-card-footer">
-          <div style="display:flex;flex-direction:column;gap:4px;">
-            <span class="news-card-meta">${escHtml(item.date || '')}</span>
-            <div class="news-card-tags">${tagsHTML}</div>
-          </div>
-          ${linkBtn}
-        </div>
+      <div class="rc-info">
+        <div class="rc-title">${escHtml(item.title)}</div>
+        <div class="rc-artist">${escHtml(item.artist || '')}</div>
       </div>
     </article>
   `;
+}
+
+function toggleExpandedRelease(card, item, grid) {
+  const existingRow = grid.querySelector('.news-expanded-row.open');
+  if (existingRow && existingRow.dataset.forId === item.id) {
+    closeExpandedRow(existingRow, card); return;
+  }
+  if (existingRow) {
+    const prevCard = grid.querySelector(`.release-card[data-id="${existingRow.dataset.forId}"]`);
+    closeExpandedRow(existingRow, prevCard);
+  }
+  card.classList.add('is-open');
+  const row   = buildExpandedRelease(item);
+  const cols  = 5;
+  const cards = Array.from(grid.querySelectorAll('.release-card'));
+  const idx   = cards.indexOf(card);
+  const rowLastIdx = Math.min(Math.floor(idx / cols) * cols + cols - 1, cards.length - 1);
+  cards[rowLastIdx].insertAdjacentElement('afterend', row);
+  requestAnimationFrame(() => requestAnimationFrame(() => row.classList.add('open')));
+  setTimeout(() => row.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80);
+  row.querySelector('.exp-close-row-btn').addEventListener('click', e => {
+    e.stopPropagation(); closeExpandedRow(row, card);
+  });
+  const escHandler = e => {
+    if (e.key === 'Escape') { closeExpandedRow(row, card); document.removeEventListener('keydown', escHandler); }
+  };
+  document.addEventListener('keydown', escHandler);
+  loadComments(item.id, row);
+}
+
+function buildExpandedRelease(item) {
+  const thumb = item.thumbnail
+    ? `<img src="${item.thumbnail}" alt="${escHtml(item.title)}" class="exp-rel-thumb" />`
+    : `<div class="exp-rel-thumb exp-rel-nothumb"><span>♪</span></div>`;
+
+  const tagsHTML = (item.tags || []).map(t => `<span class="exp-tag">${escHtml(t)}</span>`).join('');
+  const typeLabel = item.releaseType ? `<span class="exp-rel-type">${escHtml(item.releaseType)}</span>` : '';
+
+  // Platform linki — platformu URL-dən tanı
+  let platformIcon = '🔗', platformName = 'DİNLƏ';
+  if (item.link) {
+    const l = item.link.toLowerCase();
+    if (l.includes('spotify'))    { platformIcon = ''; platformName = 'Spotify-də Aç'; }
+    else if (l.includes('youtube')) { platformIcon = ''; platformName = 'YouTube-da İzlə'; }
+    else if (l.includes('soundcloud')) { platformIcon = ''; platformName = 'SoundCloud-da Dinlə'; }
+    else if (l.includes('apple'))  { platformIcon = ''; platformName = 'Apple Music-də Aç'; }
+    else if (l.includes('deezer')) { platformIcon = '🎵'; platformName = 'Deezer-də Aç'; }
+    else if (l.includes('tidal'))  { platformIcon = '🎵'; platformName = 'Tidal-da Aç'; }
+  }
+
+  const linkBtn = item.link
+    ? `<a class="exp-platform-btn" href="${escHtml(item.link)}" target="_blank" rel="noopener">${platformIcon} ${platformName}</a>`
+    : '';
+
+  const descHTML = item.description
+    ? `<p class="exp-body">${escHtml(item.description)}</p>`
+    : '';
+
+  const row = document.createElement('div');
+  row.className     = 'news-expanded-row';
+  row.dataset.forId = item.id;
+  row.innerHTML = `
+    <div class="exp-row-inner exp-rel-inner">
+      <button class="exp-close-row-btn">✕</button>
+      <div class="exp-rel-header">
+        ${thumb}
+        <div class="exp-rel-meta">
+          ${typeLabel}
+          <h2 class="exp-rel-title">${escHtml(item.title)}</h2>
+          <div class="exp-rel-artist">🎤 ${escHtml(item.artist || '')}</div>
+          <div class="exp-rel-date">${escHtml(item.date || '')}</div>
+          ${descHTML}
+          <div class="exp-rel-actions">
+            ${linkBtn}
+          </div>
+          <div class="exp-tags" style="margin-top:12px;">${tagsHTML}</div>
+        </div>
+      </div>
+      <div class="exp-comments" id="expComments_${item.id}">
+        <div class="comments-loading-state">YÜKLƏNİR…</div>
+      </div>
+    </div>
+  `;
+  return row;
 }
 
 // ============================================================
@@ -468,12 +546,14 @@ async function publishNews() {
 }
 
 async function publishRelease() {
-  const title  = document.getElementById('releaseTitle').value.trim();
-  const artist = document.getElementById('releaseArtist').value.trim();
-  const link   = document.getElementById('releaseLink').value.trim();
-  if (!title)  { alert('Mahnının adı boş ola bilməz!'); return; }
-  if (!artist) { alert('Sənətçi adı boş ola bilməz!'); return; }
-  if (!link)   { alert('Platform linki boş ola bilməz!'); return; }
+  const title       = document.getElementById('releaseTitle').value.trim();
+  const artist      = document.getElementById('releaseArtist').value.trim();
+  const link        = document.getElementById('releaseLink').value.trim();
+  const releaseType = document.getElementById('releaseType').value;
+  if (!releaseType) { alert('Reliz növünü seçin!'); return; }
+  if (!title)       { alert('Adı boş ola bilməz!'); return; }
+  if (!artist)      { alert('Sənətçi adı boş ola bilməz!'); return; }
+  if (!link)        { alert('Platform linki boş ola bilməz!'); return; }
 
   const btn = document.getElementById('releasePublishBtn');
   btn.disabled    = true;
@@ -493,7 +573,7 @@ async function publishRelease() {
       const b64 = await fileToBase64(thumbInput.files[0]);
       thumbnail = await compressImage(b64, 600, 0.8);
     }
-    const docData = { title, artist, link, description: desc, tags, thumbnail, date: dateStr, postType: 'release', createdAt: serverTimestamp() };
+    const docData = { title, artist, link, releaseType, description: desc, tags, thumbnail, date: dateStr, postType: 'release', createdAt: serverTimestamp() };
     const docRef  = await addDoc(collection(db, 'releases'), docData);
     pushRelease({ id: docRef.id, ...docData });
     renderView();

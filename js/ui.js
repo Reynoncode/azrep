@@ -163,6 +163,15 @@ export function initModal() {
       inp.focus();
     });
   });
+
+  // Reliz növü seçimi
+  document.querySelectorAll('.release-type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.release-type-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('releaseType').value = btn.dataset.type;
+    });
+  });
 }
 
 export function closeNewsModal() {
@@ -178,11 +187,14 @@ function resetReleaseForm() {
   document.getElementById('releaseArtist').value = '';
   document.getElementById('releaseLink').value   = '';
   document.getElementById('releaseDesc').value   = '';
+  document.getElementById('releaseType').value   = '';
   document.getElementById('releaseThumbImg').src = '';
   document.getElementById('releaseThumbInput').value = '';
   document.getElementById('releaseThumbPreview').style.display = 'none';
   document.getElementById('releaseThumbZone').style.display = '';
   document.getElementById('releaseTitleCount').textContent = '0/120';
+  // Növ seçim düymələrini sıfırla
+  document.querySelectorAll('.release-type-btn').forEach(b => b.classList.remove('active'));
   // Hashtag-ları sıfırla (yalnız ilk 3-ü saxla)
   const list = document.getElementById('releaseHashtagList');
   const inputs = list.querySelectorAll('.hashtag-input');

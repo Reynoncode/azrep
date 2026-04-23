@@ -170,3 +170,36 @@
   letter-spacing: 2px;
   border-top: 1px solid #1a1a1a;
 }
+
+/* ── Navbar Sənətçi Əlavə Et düyməsi ── */
+.nav-add-artist-btn {
+  background: #FF3C00;
+  color: #fff;
+  border: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 6px 14px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background 0.15s, transform 0.1s;
+  white-space: nowrap;
+  margin-left: 6px;
+}
+.nav-add-artist-btn:hover {
+  background: #cc3000;
+  transform: translateY(-1px);
+}
+
+/* Drawer ikinci düymə */
+.add-artist-btn {
+  background: transparent !important;
+  color: #FF3C00 !important;
+  border: 2px solid #FF3C00 !important;
+  margin-top: 8px;
+}
+.add-artist-btn:hover {
+  background: #FF3C00 !important;
+  color: #fff !important;
+}

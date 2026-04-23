@@ -408,3 +408,208 @@
   opacity: 0.7;
 }
 .top-artist-spotify:hover { opacity: 1; }
+
+/* ── Artist kart hover hint ── */
+.artist-card-open-hint {
+  display: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: #FF3C00;
+  text-align: right;
+  padding: 4px 12px 8px;
+  text-transform: uppercase;
+}
+.artist-card:hover .artist-card-open-hint {
+  display: block;
+}
+
+/* ============================================================
+   SƏNƏTÇİ PROFİL SƏHİFƏSİ
+   ============================================================ */
+.artist-profile-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 0 60px;
+}
+
+.ap-back-btn {
+  background: none;
+  border: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #888;
+  cursor: pointer;
+  padding: 20px 0 28px;
+  display: block;
+  text-transform: uppercase;
+  transition: color 0.15s;
+}
+.ap-back-btn:hover { color: #FF3C00; }
+
+/* Hero bölümü */
+.ap-hero {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 48px;
+  align-items: flex-end;
+  padding: 0 0 40px;
+  border-bottom: 2px solid #0D0D0D;
+  margin-bottom: 40px;
+}
+
+.ap-hero-left {
+  position: relative;
+}
+
+.ap-photo {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  display: block;
+  border: 2px solid #0D0D0D;
+  box-shadow: 6px 6px 0 #0D0D0D;
+}
+.ap-photo-placeholder {
+  width: 100%;
+  aspect-ratio: 1/1;
+  background: #1a1a1a;
+  border: 2px solid #0D0D0D;
+  box-shadow: 6px 6px 0 #0D0D0D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Oswald', sans-serif;
+  font-size: 80px;
+  font-weight: 700;
+  color: #444;
+  text-transform: uppercase;
+}
+
+.ap-type-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: #888;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.ap-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: clamp(36px, 6vw, 72px);
+  font-weight: 700;
+  color: #0D0D0D;
+  text-transform: uppercase;
+  line-height: 0.95;
+  margin: 0 0 12px;
+  letter-spacing: -1px;
+}
+
+.ap-realname {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.ap-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.ap-genre-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1.5px solid #0D0D0D;
+  color: #0D0D0D;
+  background: #fff;
+}
+
+.ap-listeners {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.ap-socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+.ap-social-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 9px 16px;
+  border: 2px solid #0D0D0D;
+  color: #0D0D0D;
+  background: #fff;
+  transition: background 0.15s, color 0.15s;
+}
+.ap-social-btn:hover { background: #0D0D0D; color: #fff; }
+.ap-spotify { border-color: #1DB954; color: #1DB954; }
+.ap-spotify:hover { background: #1DB954; color: #fff; border-color: #1DB954; }
+.ap-instagram { border-color: #E1306C; color: #E1306C; }
+.ap-instagram:hover { background: #E1306C; color: #fff; border-color: #E1306C; }
+.ap-youtube { border-color: #FF0000; color: #FF0000; }
+.ap-youtube:hover { background: #FF0000; color: #fff; border-color: #FF0000; }
+
+/* Bölümlər */
+.ap-section {
+  margin-bottom: 40px;
+}
+.ap-section-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: #AAA;
+  text-transform: uppercase;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #0D0D0D;
+  margin-bottom: 20px;
+}
+.ap-bio-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #333;
+  max-width: 680px;
+}
+.ap-releases-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+.ap-news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ap-empty-note {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: #AAA;
+  letter-spacing: 1px;
+  padding: 16px 0;
+}

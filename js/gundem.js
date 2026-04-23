@@ -137,15 +137,25 @@ async function loadTopicComments(topicId, expandedEl, topic) {
 
   let allComments = [];
   try {
+    // NOT: where() + orderBy() fərqli sahələr üzərindədirsə Firestore composite
+    // index tələb edir. İndex olmadıqda query səssiz uğursuz olur və yorumlar
+    // itmiş görünür. orderBy-ı sorğudan çıxarıb client-side sıralayırıq.
     const q = query(
       collection(db, 'gundem_comments'),
-      where('topicId', '==', topicId),
-      orderBy('createdAt', 'asc')
+      where('topicId', '==', topicId)
     );
     const snap = await getDocs(q);
     allComments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Client-side sıralama — Firebase Timestamp və ya plain seconds dəstəklənir
+    allComments.sort((a, b) => {
+      const toMs = ts => ts?.toMillis?.() ?? (ts?.seconds ?? 0) * 1000;
+      return toMs(a.createdAt) - toMs(b.createdAt);
+    });
   } catch (e) {
     console.error('Yorumlar yüklənmədi:', e);
+    wrapEl.innerHTML = `<div class="comment-empty" style="color:var(--error,#e55)">Yorumlar yüklənərkən xəta baş verdi. Səhifəni yeniləyin.</div>`;
+    return;
   }
 
   const topLevel = allComments.filter(c => !c.parentId);

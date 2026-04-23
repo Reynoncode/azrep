@@ -101,62 +101,190 @@
   <div class="modal-overlay" id="newsModal">
     <div class="modal-box">
       <div class="modal-header">
-        <span class="modal-title">YENİ XƏBƏR</span>
+        <span class="modal-title" id="modalMainTitle">YENİ ƏLAVƏ ET</span>
         <button class="modal-close" id="closeModalBtn">✕</button>
       </div>
       <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">BAŞLIQ</label>
-          <input type="text" id="newsTitle" class="form-input" placeholder="Xəbərin başlığı..." maxlength="120" />
-          <span class="char-count" id="titleCount">0/120</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">XƏBƏRİN MƏTNİ</label>
-          <textarea id="newsBody" class="form-textarea" placeholder="Xəbəri buraya yazın..."></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">HASHTAGLAR (maks. 3)</label>
-          <div class="hashtag-inputs">
-            <input type="text" class="form-input hashtag-input" placeholder="#azrap" maxlength="30" />
-            <input type="text" class="form-input hashtag-input" placeholder="#musiqi" maxlength="30" />
-            <input type="text" class="form-input hashtag-input" placeholder="#xeber" maxlength="30" />
+
+        <!-- ── NÖV SEÇİM EKRANI ── -->
+        <div id="postTypeScreen">
+          <p class="post-type-lead">Nə əlavə etmək istəyirsən?</p>
+          <div class="post-type-grid">
+            <button class="post-type-card" data-type="news">
+              <span class="post-type-icon">📰</span>
+              <span class="post-type-name">XƏBƏR</span>
+              <span class="post-type-desc">Rap dünyasından xəbər paylaş</span>
+            </button>
+            <button class="post-type-card" data-type="release">
+              <span class="post-type-icon">🎵</span>
+              <span class="post-type-name">RELİZ</span>
+              <span class="post-type-desc">Yeni mahnı və ya albom paylaş</span>
+            </button>
+            <button class="post-type-card" data-type="podcast">
+              <span class="post-type-icon">🎙</span>
+              <span class="post-type-name">PODCAST</span>
+              <span class="post-type-desc">Müsahibə, battle, yarışma...</span>
+            </button>
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">MEDIA</label>
-          <div class="media-tabs">
-            <button class="media-tab active" data-tab="image">🖼 Şəkil</button>
-            <button class="media-tab" data-tab="video">🎬 Video</button>
+
+        <!-- ── XƏBƏR FORMU ── -->
+        <div id="newsForm" style="display:none">
+          <button class="back-btn" id="backToTypeBtn">← Geri</button>
+          <div class="form-group">
+            <label class="form-label">BAŞLIQ</label>
+            <input type="text" id="newsTitle" class="form-input" placeholder="Xəbərin başlığı..." maxlength="120" />
+            <span class="char-count" id="titleCount">0/120</span>
           </div>
-          <div class="media-panel active" id="imagePanel">
-            <div class="file-drop-zone" id="imageDropZone">
-              <input type="file" id="imageInput" accept="image/*" hidden />
-              <div class="drop-label" id="imageDropLabel">
-                <span>Şəkil seçmək üçün klikləyin</span>
+          <div class="form-group">
+            <label class="form-label">XƏBƏRİN MƏTNİ</label>
+            <textarea id="newsBody" class="form-textarea" placeholder="Xəbəri buraya yazın..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">HASHTAGLAR <span class="form-label-note">(3 məcburi, istəyə bağlı artır)</span></label>
+            <div class="hashtag-inputs" id="newsHashtagList">
+              <input type="text" class="form-input hashtag-input" placeholder="#azrap" maxlength="30" />
+              <input type="text" class="form-input hashtag-input" placeholder="#musiqi" maxlength="30" />
+              <input type="text" class="form-input hashtag-input" placeholder="#xeber" maxlength="30" />
+            </div>
+            <button class="add-hashtag-btn" data-target="newsHashtagList">+ Hashtag əlavə et</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">MEDIA</label>
+            <div class="media-tabs">
+              <button class="media-tab active" data-tab="image">🖼 Şəkil</button>
+              <button class="media-tab" data-tab="video">🎬 Video</button>
+            </div>
+            <div class="media-panel active" id="imagePanel">
+              <div class="file-drop-zone" id="imageDropZone">
+                <input type="file" id="imageInput" accept="image/*" hidden multiple />
+                <div class="drop-label" id="imageDropLabel">
+                  <span>Şəkillər seçmək üçün klikləyin</span>
+                  <small>JPG, PNG, WEBP — MAKS. 10 ŞƏKİL</small>
+                </div>
+              </div>
+            </div>
+            <div class="media-panel" id="videoPanel">
+              <div class="file-drop-zone" id="videoDropZone">
+                <input type="file" id="videoInput" accept="video/*" hidden />
+                <div class="drop-label" id="videoDropLabel">
+                  <span>Video seçmək üçün klikləyin</span>
+                  <small>MP4, MOV, WEBM</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">KEÇİD LİNKİ <span class="form-label-note">(istəyə bağlı)</span></label>
+            <input type="url" id="newsLink" class="form-input" placeholder="https://..." />
+          </div>
+          <div class="form-group" id="btnLabelGroup" style="display:none">
+            <label class="form-label">BUTTON YAZISI <span class="form-label-note">(maks. 25 hərf)</span></label>
+            <input type="text" id="newsBtnLabel" class="form-input" placeholder="Ətraflı oxu" maxlength="25" />
+            <span class="char-count" id="btnLabelCount">0/25</span>
+          </div>
+          <button class="publish-btn" id="publishBtn">YAYIMLA</button>
+        </div>
+
+        <!-- ── RELİZ FORMU ── -->
+        <div id="releaseForm" style="display:none">
+          <button class="back-btn" id="backToTypeFromRelease">← Geri</button>
+          <div class="form-group">
+            <label class="form-label">MAHNININ ADI</label>
+            <input type="text" id="releaseTitle" class="form-input" placeholder="Trekkin adı..." maxlength="120" />
+            <span class="char-count" id="releaseTitleCount">0/120</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">SƏNƏTÇİ</label>
+            <input type="text" id="releaseArtist" class="form-input" placeholder="Sənətçinin adı..." maxlength="80" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">THUMBNAIL</label>
+            <div class="file-drop-zone" id="releaseThumbZone">
+              <input type="file" id="releaseThumbInput" accept="image/*" hidden />
+              <div class="drop-label" id="releaseThumbLabel">
+                <span>Üz şəkli seçmək üçün klikləyin</span>
+                <small>JPG, PNG, WEBP — 1:1 tövsiyə olunur</small>
+              </div>
+            </div>
+            <div id="releaseThumbPreview" style="display:none;margin-top:10px;position:relative;">
+              <img id="releaseThumbImg" src="" style="width:100%;max-height:200px;object-fit:cover;border:2px solid #D0CEC9;" />
+              <button id="releaseThumbRemove" style="position:absolute;top:6px;right:6px;background:#000;color:#fff;border:none;padding:4px 8px;cursor:pointer;font-size:11px;">✕ Sil</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">PLATFORM LİNKİ <span class="form-label-note">(Spotify, YouTube, SoundCloud...)</span></label>
+            <input type="url" id="releaseLink" class="form-input" placeholder="https://..." />
+          </div>
+          <div class="form-group">
+            <label class="form-label">AÇIQLAMA <span class="form-label-note">(istəyə bağlı)</span></label>
+            <textarea id="releaseDesc" class="form-textarea" placeholder="Reliz haqqında qısa məlumat..." style="min-height:80px;"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">HASHTAGLAR <span class="form-label-note">(3 məcburi, istəyə bağlı artır)</span></label>
+            <div class="hashtag-inputs" id="releaseHashtagList">
+              <input type="text" class="form-input hashtag-input" placeholder="#azrap" maxlength="30" />
+              <input type="text" class="form-input hashtag-input" placeholder="#reliz" maxlength="30" />
+              <input type="text" class="form-input hashtag-input" placeholder="#musiqi" maxlength="30" />
+            </div>
+            <button class="add-hashtag-btn" data-target="releaseHashtagList">+ Hashtag əlavə et</button>
+          </div>
+          <button class="publish-btn" id="releasePublishBtn">YAYIMLA</button>
+        </div>
+
+        <!-- ── PODCAST FORMU ── -->
+        <div id="podcastForm" style="display:none">
+          <button class="back-btn" id="backToTypeFromPodcast">← Geri</button>
+          <div class="form-group">
+            <label class="form-label">BAŞLIQ</label>
+            <input type="text" id="podcastTitle" class="form-input" placeholder="Müsahibə, battle, yarışma..." maxlength="120" />
+            <span class="char-count" id="podcastTitleCount">0/120</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">KATEQORİYA</label>
+            <select id="podcastCategory" class="form-input">
+              <option value="">Seç...</option>
+              <option value="müsahibə">Müsahibə</option>
+              <option value="battle">Battle</option>
+              <option value="yarışma">Yarışma</option>
+              <option value="podcast">Podcast</option>
+              <option value="digər">Digər</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">THUMBNAIL</label>
+            <div class="file-drop-zone" id="podcastThumbZone">
+              <input type="file" id="podcastThumbInput" accept="image/*" hidden />
+              <div class="drop-label" id="podcastThumbLabel">
+                <span>Üz şəkli seçmək üçün klikləyin</span>
                 <small>JPG, PNG, WEBP</small>
               </div>
             </div>
-          </div>
-          <div class="media-panel" id="videoPanel">
-            <div class="file-drop-zone" id="videoDropZone">
-              <input type="file" id="videoInput" accept="video/*" hidden />
-              <div class="drop-label" id="videoDropLabel">
-                <span>Video seçmək üçün klikləyin</span>
-                <small>MP4, MOV, WEBM</small>
-              </div>
+            <div id="podcastThumbPreview" style="display:none;margin-top:10px;position:relative;">
+              <img id="podcastThumbImg" src="" style="width:100%;max-height:200px;object-fit:cover;border:2px solid #D0CEC9;" />
+              <button id="podcastThumbRemove" style="position:absolute;top:6px;right:6px;background:#000;color:#fff;border:none;padding:4px 8px;cursor:pointer;font-size:11px;">✕ Sil</button>
             </div>
           </div>
+          <div class="form-group">
+            <label class="form-label">PLATFORm / VİDEO LİNKİ</label>
+            <input type="url" id="podcastLink" class="form-input" placeholder="YouTube, Spotify, SoundCloud..." />
+          </div>
+          <div class="form-group">
+            <label class="form-label">AÇIQLAMA <span class="form-label-note">(istəyə bağlı)</span></label>
+            <textarea id="podcastDesc" class="form-textarea" placeholder="Podcast haqqında məlumat..." style="min-height:80px;"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">HASHTAGLAR <span class="form-label-note">(3 məcburi, istəyə bağlı artır)</span></label>
+            <div class="hashtag-inputs" id="podcastHashtagList">
+              <input type="text" class="form-input hashtag-input" placeholder="#podcast" maxlength="30" />
+              <input type="text" class="form-input hashtag-input" placeholder="#azrap" maxlength="30" />
+              <input type="text" class="form-input hashtag-input" placeholder="#müsahibə" maxlength="30" />
+            </div>
+            <button class="add-hashtag-btn" data-target="podcastHashtagList">+ Hashtag əlavə et</button>
+          </div>
+          <button class="publish-btn" id="podcastPublishBtn">YAYIMLA</button>
         </div>
-        <div class="form-group">
-          <label class="form-label">KEÇİD LİNKİ (istəyə bağlı)</label>
-          <input type="url" id="newsLink" class="form-input" placeholder="https://..." />
-        </div>
-        <div class="form-group" id="btnLabelGroup" style="display:none">
-          <label class="form-label">BUTTON YAZISI <small>(maks. 25 hərf)</small></label>
-          <input type="text" id="newsBtnLabel" class="form-input" placeholder="Ətraflı oxu" maxlength="25" />
-          <span class="char-count" id="btnLabelCount">0/25</span>
-        </div>
-        <button class="publish-btn" id="publishBtn">YAYIMLA</button>
+
       </div>
     </div>
   </div>

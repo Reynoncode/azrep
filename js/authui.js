@@ -9,6 +9,8 @@ import {
   logoutUser,
   isAdmin,
   getInitials,
+  validateDisplayName,
+  suggestUniqueName,
 } from './auth.js';
 
 // ─── Firebase error mesajlarını Azərbaycan dilinə çevir ───────
@@ -231,6 +233,11 @@ function initRegisterForm() {
       errEl.textContent = 'Adınızı daxil edin.';
       errEl.classList.add('visible'); return;
     }
+    const nameErr = validateDisplayName(name);
+    if (nameErr) {
+      errEl.textContent = nameErr;
+      errEl.classList.add('visible'); return;
+    }
     if (!email) {
       errEl.textContent = 'E-mail daxil edin.';
       errEl.classList.add('visible'); return;
@@ -242,9 +249,28 @@ function initRegisterForm() {
 
     btn.disabled    = true;
     btn.textContent = 'YÜKLƏNİR…';
+
+    // Unikal ad yoxlaması (UI-də göstər, register öncəsi)
+    const uniqueName = await suggestUniqueName(name);
+    if (uniqueName !== name) {
+      succEl.textContent = `"${name}" adı mövcuddur. Size "${uniqueName}" adı təyin ediləcək.`;
+      succEl.classList.add('visible');
+    }
+
     try {
-      await registerUser(name, email, password);
+      const result = await registerUser(name, email, password);
+      const assigned = result.assignedName || name;
       closeAuthModal();
+      if (assigned !== name) {
+        // Kısa bildirim: adı dəyişdirildi
+        setTimeout(() => {
+          const toast = document.createElement('div');
+          toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#FF3C00;color:#fff;font-family:IBM Plex Mono,monospace;font-size:12px;letter-spacing:1px;padding:10px 20px;border-radius:4px;z-index:9999;';
+          toast.textContent = `Adınız "${assigned}" olaraq təyin edildi.`;
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 4000);
+        }, 300);
+      }
     } catch (err) {
       errEl.textContent = authErrMsg(err.code);
       errEl.classList.add('visible');
@@ -264,6 +290,17 @@ export function initAuthUI() {
     if (e.target === document.getElementById('authModal')) closeAuthModal();
   });
 
+  // Drawer profil linki — auth modal-ı açır, drawer-ı bağlayır
+  document.getElementById('drawerProfileLink')?.addEventListener('click', e => {
+    e.preventDefault();
+    // Drawer-ı bağla
+    document.getElementById('sideDrawer')?.classList.remove('open');
+    document.getElementById('drawerOverlay')?.classList.remove('open');
+    document.body.style.overflow = '';
+    // Auth modal-ı aç
+    openAuthModal();
+  });
+
   initAuthTabs();
   initLoginForm();
   initRegisterForm();
@@ -273,5 +310,10 @@ export function initAuthUI() {
     updateNavProfile(user, userData);
     updateDrawer(user, userData);
     updateAuthModalContent(user, userData);
+    // Drawer profil linkinin mətnini güncəllə
+    const drawerProfileLink = document.getElementById('drawerProfileLink');
+    if (drawerProfileLink) {
+      drawerProfileLink.textContent = user ? 'PROFİL' : 'GİRİŞ / QEYDİYYAT';
+    }
   });
 }

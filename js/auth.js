@@ -17,6 +17,10 @@ import {
   setDoc,
   getDoc,
   serverTimestamp,
+  collection,
+  query,
+  where,
+  getDocs,
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -64,22 +68,57 @@ async function fetchUserData(uid) {
   }
 }
 
+// ─── Ad unikallığını yoxla ─────────────────────────────────────
+// Firestore-da həmin adla başqa istifadəçi varmı?
+async function isNameTaken(name) {
+  try {
+    const q    = query(collection(db, 'users'), where('displayNameLower', '==', name.toLowerCase()));
+    const snap = await getDocs(q);
+    return !snap.empty;
+  } catch (e) {
+    console.error('Name check error:', e);
+    return false;
+  }
+}
+
+// Əgər ad tutulubsa, rəqəmli alternativ tap: ramin1, ramin2 ...
+export async function suggestUniqueName(base) {
+  let candidate = base.trim();
+  if (!(await isNameTaken(candidate))) return candidate;
+  for (let i = 1; i <= 99; i++) {
+    const alt = `${candidate}${i}`;
+    if (!(await isNameTaken(alt))) return alt;
+  }
+  return `${candidate}_${Date.now()}`;
+}
+
+// ─── Ad validasiyası ──────────────────────────────────────────
+export function validateDisplayName(name) {
+  const trimmed = name.trim();
+  if (trimmed.length < 4)  return 'Ad minimum 4 hərf olmalıdır.';
+  if (trimmed.length > 20) return 'Ad maximum 20 hərf ola bilər.';
+  return null; // ok
+}
+
 // ─── QEYDİYYAT ───────────────────────────────────────────────
 export async function registerUser(displayName, email, password) {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
+  // Unikal ad tap (eyni ad varsa ramin1, ramin2 ... təklif et)
+  const uniqueName = await suggestUniqueName(displayName);
   // Auth profil adını yenilə
-  await updateProfile(cred.user, { displayName });
+  await updateProfile(cred.user, { displayName: uniqueName });
   // Firestore-da user doc yarat
   await setDoc(doc(db, 'users', cred.user.uid), {
-    displayName,
+    displayName: uniqueName,
+    displayNameLower: uniqueName.toLowerCase(),
     email,
-    role: 'user',          // Default: user. Admin manual olaraq Firestore-dan dəyişdirilir
+    role: 'user',
     createdAt: serverTimestamp(),
     photoURL: null,
   });
   currentUser     = cred.user;
-  currentUserData = { displayName, email, role: 'user', photoURL: null };
-  return cred.user;
+  currentUserData = { displayName: uniqueName, email, role: 'user', photoURL: null };
+  return { user: cred.user, assignedName: uniqueName };
 }
 
 // ─── GİRİŞ ────────────────────────────────────────────────────

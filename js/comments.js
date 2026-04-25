@@ -4,6 +4,7 @@
 
 import { db, collection, getDocs, addDoc, orderBy, query, where, serverTimestamp } from './firebase.js';
 import { escHtml, formatDate } from './utils.js';
+import { currentUser, currentUserData } from './auth.js';
 
 export async function loadComments(newsId, row) {
   const container = row.querySelector(`#expComments_${newsId}`);
@@ -38,7 +39,10 @@ export async function loadComments(newsId, row) {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         </div>
         <div class="comment-form-fields">
-          <input type="text" class="comment-name-input main-name-input" placeholder="Adınız" maxlength="40" autocomplete="off" />
+          ${currentUser && currentUserData
+            ? `<div class="comment-auth-name" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#FF3C00;letter-spacing:1px;padding:4px 0 6px;text-transform:uppercase;">${escHtml(currentUserData.displayName || currentUser.displayName || 'İstifadəçi')}</div>`
+            : `<input type="text" class="comment-name-input main-name-input" placeholder="Adınız (min. 4 hərf)" maxlength="20" autocomplete="off" />`
+          }
           <textarea class="comment-text-input main-text-input" placeholder="Yorum əlavə edin..." maxlength="500" rows="1"></textarea>
           <div class="comment-form-actions main-form-actions" style="display:none;">
             <span class="comment-error-msg main-error-msg"></span>
@@ -70,7 +74,7 @@ export async function loadComments(newsId, row) {
   mainCancel.addEventListener('click', () => {
     mainTextarea.value = ''; mainTextarea.rows = 1;
     mainActions.style.display = 'none';
-    mainName.value = ''; mainName.classList.remove('error');
+    if (mainName) { mainName.value = ''; mainName.classList.remove('error'); }
   });
 
   // Yorumlar toggle — bütün collapsible bölməni açır/bağlayır
@@ -107,12 +111,25 @@ export async function loadComments(newsId, row) {
     const errorMsg  = formEl.querySelector('.comment-error-msg');
     const parentId  = submitBtn.dataset.parentId || null;
     const nId       = submitBtn.dataset.newsId || newsId;
-    const author    = (nameInput?.value || '').trim();
+
+    // Ad: auth istifadəçisi isə öz adı, deyilsə input-dan
+    let author;
+    if (currentUser && currentUserData) {
+      author = currentUserData.displayName || currentUser.displayName || 'İstifadəçi';
+    } else {
+      author = (nameInput?.value || '').trim();
+    }
+
     const text      = (textInput?.value  || '').trim();
 
-    if (!author) {
+    if (!currentUser && !author) {
       if (nameInput) { nameInput.classList.add('error'); nameInput.focus(); }
       if (errorMsg)  { errorMsg.textContent = 'Ad yazmaq məcburidir'; errorMsg.classList.add('visible'); }
+      return;
+    }
+    if (!currentUser && author && author.length < 4) {
+      if (nameInput) { nameInput.classList.add('error'); nameInput.focus(); }
+      if (errorMsg)  { errorMsg.textContent = 'Ad minimum 4 hərf olmalıdır'; errorMsg.classList.add('visible'); }
       return;
     }
     if (nameInput) nameInput.classList.remove('error');
@@ -174,7 +191,7 @@ function buildCommentBodyHTML(comment, myReplies, newsId) {
   const dateStr   = formatDate(comment.createdAt);
   const replyForm = `
     <div class="comment-reply-form" id="replyForm_${comment.id}" style="display:none;">
-      <input type="text" class="comment-name-input reply-name-input" placeholder="Adınız" maxlength="40" autocomplete="off" />
+      <input type="text" class="comment-name-input reply-name-input" placeholder="Adınız (min. 4 hərf)" maxlength="20" autocomplete="off" />
       <textarea class="comment-text-input reply-text-input" placeholder="@${escHtml(comment.author || 'Anonim')} cavab verin..." maxlength="500" rows="2"></textarea>
       <div class="comment-form-actions">
         <span class="comment-error-msg"></span>

@@ -10,7 +10,6 @@ import {
   isAdmin,
   getInitials,
   validateDisplayName,
-  suggestUniqueName,
 } from './auth.js';
 
 // ─── Firebase error mesajlarını Azərbaycan dilinə çevir ───────
@@ -250,19 +249,11 @@ function initRegisterForm() {
     btn.disabled    = true;
     btn.textContent = 'YÜKLƏNİR…';
 
-    // Unikal ad yoxlaması (UI-də göstər, register öncəsi)
-    const uniqueName = await suggestUniqueName(name);
-    if (uniqueName !== name) {
-      succEl.textContent = `"${name}" adı mövcuddur. Size "${uniqueName}" adı təyin ediləcək.`;
-      succEl.classList.add('visible');
-    }
-
     try {
       const result = await registerUser(name, email, password);
       const assigned = result.assignedName || name;
       closeAuthModal();
       if (assigned !== name) {
-        // Kısa bildirim: adı dəyişdirildi
         setTimeout(() => {
           const toast = document.createElement('div');
           toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#FF3C00;color:#fff;font-family:IBM Plex Mono,monospace;font-size:12px;letter-spacing:1px;padding:10px 20px;border-radius:4px;z-index:9999;';

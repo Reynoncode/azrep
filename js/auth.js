@@ -68,30 +68,6 @@ async function fetchUserData(uid) {
   }
 }
 
-// ─── Ad unikallığını yoxla ─────────────────────────────────────
-// Firestore-da həmin adla başqa istifadəçi varmı?
-async function isNameTaken(name) {
-  try {
-    const q    = query(collection(db, 'users'), where('displayNameLower', '==', name.toLowerCase()));
-    const snap = await getDocs(q);
-    return !snap.empty;
-  } catch (e) {
-    console.error('Name check error:', e);
-    return false;
-  }
-}
-
-// Əgər ad tutulubsa, rəqəmli alternativ tap: ramin1, ramin2 ...
-export async function suggestUniqueName(base) {
-  let candidate = base.trim();
-  if (!(await isNameTaken(candidate))) return candidate;
-  for (let i = 1; i <= 99; i++) {
-    const alt = `${candidate}${i}`;
-    if (!(await isNameTaken(alt))) return alt;
-  }
-  return `${candidate}_${Date.now()}`;
-}
-
 // ─── Ad validasiyası ──────────────────────────────────────────
 export function validateDisplayName(name) {
   const trimmed = name.trim();
@@ -100,22 +76,55 @@ export function validateDisplayName(name) {
   return null; // ok
 }
 
+// ─── Ad unikallığını yoxla (yalnız auth user varsa çalışır) ───
+// Qeydiyyat SONRASI çağırılır — token artıq mövcuddur
+async function isNameTaken(name, excludeUid) {
+  try {
+    const q    = query(collection(db, 'users'), where('displayNameLower', '==', name.toLowerCase()));
+    const snap = await getDocs(q);
+    // Öz doc-u sayma
+    return snap.docs.some(d => d.id !== excludeUid);
+  } catch (e) {
+    // İcazə xətası — ad mövcud deyil sayırıq (safe fallback)
+    console.warn('Name check skipped (permission):', e.code);
+    return false;
+  }
+}
+
+async function findUniqueName(base, uid) {
+  let candidate = base.trim();
+  if (!(await isNameTaken(candidate, uid))) return candidate;
+  for (let i = 1; i <= 99; i++) {
+    const alt = `${candidate}${i}`;
+    if (!(await isNameTaken(alt, uid))) return alt;
+  }
+  return `${candidate}_${Date.now()}`;
+}
+
 // ─── QEYDİYYAT ───────────────────────────────────────────────
+// Strategiya: əvvəl Auth hesab yarat (token alınır), sonra Firestore oxu/yaz
 export async function registerUser(displayName, email, password) {
+  const baseName = displayName.trim();
+
+  // 1. Firebase Auth hesabı yarat — bu nöqtədən token mövcuddur
   const cred = await createUserWithEmailAndPassword(auth, email, password);
-  // Unikal ad tap (eyni ad varsa ramin1, ramin2 ... təklif et)
-  const uniqueName = await suggestUniqueName(displayName);
-  // Auth profil adını yenilə
+
+  // 2. İndi Firestore-a token ilə sorğu göndərə bilirik
+  const uniqueName = await findUniqueName(baseName, cred.user.uid);
+
+  // 3. Auth profil adını yenilə
   await updateProfile(cred.user, { displayName: uniqueName });
-  // Firestore-da user doc yarat
+
+  // 4. Firestore-da user doc yarat
   await setDoc(doc(db, 'users', cred.user.uid), {
-    displayName: uniqueName,
+    displayName:      uniqueName,
     displayNameLower: uniqueName.toLowerCase(),
     email,
-    role: 'user',
+    role:      'user',
     createdAt: serverTimestamp(),
-    photoURL: null,
+    photoURL:  null,
   });
+
   currentUser     = cred.user;
   currentUserData = { displayName: uniqueName, email, role: 'user', photoURL: null };
   return { user: cred.user, assignedName: uniqueName };

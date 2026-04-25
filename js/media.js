@@ -1,5 +1,5 @@
 // ==============================
-// media.js — Şəkil & Video upload, crop, edit
+// media.js — Şəkil & Video upload, crop, edit + YouTube autofill
 // ==============================
 
 import {
@@ -9,6 +9,8 @@ import {
   activeMediaType, setActiveMediaType,
   cropState, setCropState
 } from './state.js';
+
+import { fetchYouTubeData, thumbnailToBase64, extractYouTubeId } from './youtube.js';
 
 // ---- RESET FORM ----
 export function resetForm() {
@@ -47,6 +49,123 @@ export function initLinkInput() {
   document.getElementById('newsLink').addEventListener('input', function () {
     document.getElementById('btnLabelGroup').style.display = this.value.trim() ? 'flex' : 'none';
   });
+}
+
+// ============================================================
+// YOUTUBE AUTOFILL — Reliz & Podcast formları üçün
+// ============================================================
+
+// Thumbnail-i thumb preview-ə tətbiq et
+function applyThumbPreview(formType, base64) {
+  const imgEl    = document.getElementById(`${formType}ThumbImg`);
+  const preview  = document.getElementById(`${formType}ThumbPreview`);
+  const zone     = document.getElementById(`${formType}ThumbZone`);
+  const label    = document.getElementById(`${formType}ThumbLabel`);
+  if (imgEl)   imgEl.src = base64;
+  if (preview) preview.style.display = '';
+  if (zone)    zone.style.display    = 'none';
+  if (label)   label.innerHTML       = '<span>✓ YouTube thumbnail</span>';
+}
+
+function initYtAutofillForForm(formType) {
+  const fetchBtn   = document.getElementById(`${formType}YtFetchBtn`);
+  const linkInput  = document.getElementById(`${formType}YtLink`);
+  const statusEl   = document.getElementById(`${formType}YtStatus`);
+  const confirmEl  = document.getElementById(`${formType}YtConfirm`);
+  const thumbEl    = document.getElementById(`${formType}YtThumb`);
+  const titleEl    = document.getElementById(`${formType}YtTitle`);
+  const authorEl   = document.getElementById(`${formType}YtAuthor`);
+  const confirmYes = document.getElementById(`${formType}YtConfirmYes`);
+  const confirmNo  = document.getElementById(`${formType}YtConfirmNo`);
+
+  if (!fetchBtn) return;
+
+  let pendingData = null; // Onay gözləyən YouTube məlumatı
+
+  function setStatus(msg, isErr) {
+    if (!statusEl) return;
+    statusEl.textContent = msg;
+    statusEl.style.color = isErr ? '#FF3C00' : '#888';
+  }
+
+  fetchBtn.addEventListener('click', async () => {
+    const url = linkInput?.value.trim();
+    if (!url) { setStatus('Link daxil edin.', true); return; }
+    if (!extractYouTubeId(url)) { setStatus('Düzgün YouTube linki deyil.', true); return; }
+
+    fetchBtn.disabled    = true;
+    fetchBtn.textContent = '…';
+    setStatus('YouTube məlumatı gətirilir...', false);
+    if (confirmEl) confirmEl.style.display = 'none';
+
+    try {
+      const data = await fetchYouTubeData(url);
+      pendingData = data;
+
+      // Onay kartını doldur
+      if (thumbEl)  thumbEl.src              = data.thumbnail;
+      if (titleEl)  titleEl.textContent      = data.title;
+      if (authorEl) authorEl.textContent     = data.author;
+      if (confirmEl) confirmEl.style.display = '';
+      setStatus('', false);
+    } catch (err) {
+      setStatus(err.message || 'Xəta baş verdi.', true);
+    } finally {
+      fetchBtn.disabled    = false;
+      fetchBtn.innerHTML   = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Çək';
+    }
+  });
+
+  // Enter ilə fetch
+  linkInput?.addEventListener('keydown', e => { if (e.key === 'Enter') fetchBtn.click(); });
+
+  // ✓ Tətbiq et
+  confirmYes?.addEventListener('click', async () => {
+    if (!pendingData) return;
+    confirmYes.disabled    = true;
+    confirmYes.textContent = 'Tətbiq edilir...';
+
+    // Başlıq
+    const titleInput = document.getElementById(`${formType === 'release' ? 'releaseTitle' : 'podcastTitle'}`);
+    if (titleInput && !titleInput.value.trim()) {
+      titleInput.value = pendingData.title;
+      titleInput.dispatchEvent(new Event('input'));
+    }
+
+    // Link (platform link sahəsinə)
+    const linkField = document.getElementById(`${formType}Link`);
+    if (linkField && !linkField.value.trim()) {
+      linkField.value = pendingData.watchUrl;
+    }
+
+    // Thumbnail base64-ə çevir
+    try {
+      setStatus('Thumbnail yüklənir...', false);
+      const b64 = await thumbnailToBase64(pendingData.thumbnail, pendingData.thumbnailFallback);
+      applyThumbPreview(formType, b64);
+      setStatus('✓ Avtomatik dolduruldu', false);
+    } catch {
+      // Thumbnail alınmasa da digər sahələr dolub
+      setStatus('✓ Başlıq və link dolduruldu (thumbnail alınmadı)', false);
+    }
+
+    if (confirmEl) confirmEl.style.display = 'none';
+    confirmYes.disabled    = false;
+    confirmYes.textContent = '✓ Tətbiq et';
+    pendingData = null;
+  });
+
+  // ✕ Ləğv et
+  confirmNo?.addEventListener('click', () => {
+    if (confirmEl) confirmEl.style.display = 'none';
+    pendingData = null;
+    setStatus('', false);
+  });
+}
+
+export function initYouTubeAutofill() {
+  initYtAutofillForForm('release');
+  initYtAutofillForForm('podcast');
 }
 
 // ============================================================

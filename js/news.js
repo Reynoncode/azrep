@@ -37,6 +37,7 @@ export async function loadNews() {
 export function renderView() {
   const featureSection  = document.querySelector('.feature-section');
   const newsGridSection = document.querySelector('.news-grid-section');
+  const sectionHeader   = newsGridSection?.querySelector('.section-header');
   const sectionTag      = newsGridSection?.querySelector('.section-tag');
   const grid            = document.getElementById('newsGrid');
 
@@ -45,18 +46,25 @@ export function renderView() {
 
   if (currentSection === 'news') {
     if (featureSection) featureSection.style.display = 'none';
+    if (sectionHeader) sectionHeader.style.display = '';
     if (sectionTag) sectionTag.textContent = 'BÜTÜN XƏBƏRLƏR';
+    if (newsGridSection) newsGridSection.style.paddingTop = '32px';
     renderNewsGrid(news);
   } else if (currentSection === 'albums') {
     if (featureSection) featureSection.style.display = 'none';
+    if (sectionHeader) sectionHeader.style.display = '';
     if (sectionTag) sectionTag.textContent = 'RELİZLƏR';
+    if (newsGridSection) newsGridSection.style.paddingTop = '32px';
     renderReleasesGrid(releases);
   } else if (currentSection === 'interview') {
     if (featureSection) featureSection.style.display = 'none';
+    if (sectionHeader) sectionHeader.style.display = '';
     if (sectionTag) sectionTag.textContent = 'PODCASTLAR';
+    if (newsGridSection) newsGridSection.style.paddingTop = '32px';
     renderPodcastsGrid(podcasts);
   } else if (currentSection === 'azrap') {
     if (featureSection) featureSection.style.display = 'none';
+    if (sectionHeader) sectionHeader.style.display = 'none';
     if (newsGridSection) newsGridSection.style.paddingTop = '0';
     if (sectionTag) sectionTag.textContent = '';
     if (grid) {
@@ -65,6 +73,7 @@ export function renderView() {
     }
   } else if (currentSection === 'world') {
     if (featureSection) featureSection.style.display = 'none';
+    if (sectionHeader) sectionHeader.style.display = 'none';
     if (newsGridSection) newsGridSection.style.paddingTop = '0';
     if (sectionTag) sectionTag.textContent = '';
     if (grid) {
@@ -72,10 +81,15 @@ export function renderView() {
       renderGundemSection(grid);
     }
   } else {
-    if (featureSection) featureSection.style.display = '';
-    if (newsGridSection) newsGridSection.style.paddingTop = '';
-    if (sectionTag) sectionTag.textContent = 'SON XƏBƏRLƏR';
-    renderNewsGrid(news.slice(0, 4));
+    // ANA SƏHİFƏ
+    if (featureSection) featureSection.style.display = 'none';
+    if (sectionHeader) sectionHeader.style.display = 'none';
+    if (newsGridSection) newsGridSection.style.paddingTop = '0';
+    if (sectionTag) sectionTag.textContent = '';
+    if (grid) {
+      grid.style.gridTemplateColumns = '1fr';
+      renderHomePage(grid);
+    }
   }
 }
 
@@ -524,6 +538,346 @@ function initExpandedSlider(row, item) {
     const dx = e.changedTouches[0].clientX - tx;
     if (Math.abs(dx) > 40) goTo(dx < 0 ? cur + 1 : cur - 1);
   }, { passive: true });
+}
+
+// ============================================================
+// ANA SƏHİFƏ — HOME PAGE RENDER
+// ============================================================
+function getWeekAgo() {
+  const d = new Date();
+  d.setDate(d.getDate() - 7);
+  return d;
+}
+
+function getCommentScore(item) {
+  return (item.commentCount || 0) + (item.replyCount || 0);
+}
+
+// Timestamp-i millisaniyəyə çevir
+function tsToMs(ts) {
+  if (!ts) return 0;
+  if (ts?.toMillis) return ts.toMillis();
+  if (ts?.seconds) return ts.seconds * 1000;
+  if (ts instanceof Date) return ts.getTime();
+  return new Date(ts).getTime() || 0;
+}
+
+async function renderHomePage(container) {
+  container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#AAA;letter-spacing:2px;">YÜKLƏNİR…</div>`;
+
+  const weekAgo = getWeekAgo();
+
+  // Həftə ərzindəki xəbərlər, relizlər, podcastlar, gündəm
+  const weeklyNews     = news.filter(n => tsToMs(n.createdAt) >= weekAgo.getTime());
+  const weeklyReleases = releases.filter(r => tsToMs(r.createdAt) >= weekAgo.getTime());
+
+  // Ən çox yorum alan xəbər/podcast/sənətçi (reliz deyil)
+  // news kolleksiyasından + podcastlardan
+  let featureItem = null;
+  let featureType = 'news';
+  const allNonRelease = [
+    ...weeklyNews.map(n => ({ ...n, _src: 'news' })),
+  ];
+  allNonRelease.sort((a, b) => getCommentScore(b) - getCommentScore(a));
+  if (allNonRelease.length > 0) {
+    featureItem = allNonRelease[0];
+    featureType = featureItem._src;
+  } else if (news.length > 0) {
+    featureItem = { ...news[0], _src: 'news' };
+  }
+
+  // Top 4 reliz (həftə ərzindəki ən çox yorum alan)
+  const topReleases = [...weeklyReleases]
+    .sort((a, b) => getCommentScore(b) - getCommentScore(a))
+    .slice(0, 4);
+  // Əgər həftə boş isə bütün relizlərdən götür
+  const sidebarReleases = topReleases.length > 0
+    ? topReleases
+    : releases.slice(0, 4);
+
+  // Son 4 xəbər
+  const latestNews = news.slice(0, 4);
+
+  // Son 3 podcast
+  const latestPodcasts = podcasts.slice(0, 3);
+
+  // Ən çox müzakirə olunan gündəm başlığı
+  let topGundem = null;
+  try {
+    const { getDocs: _getDocs, query: _query, collection: _collection, orderBy: _orderBy } =
+      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const { db: _db } = await import('./firebase.js');
+    const snap = await _getDocs(_query(_collection(_db, 'gundem_topics'), _orderBy('createdAt', 'desc')));
+    const topics = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (topics.length > 0) {
+      topics.sort((a, b) => getCommentScore(b) - getCommentScore(a));
+      topGundem = topics[0];
+    }
+  } catch (e) {
+    console.warn('Gündəm yüklənmədi:', e);
+  }
+
+  // --- HTML QUR ---
+  container.innerHTML = `<div class="home-sections" style="grid-column:1/-1;">
+    ${buildHomeFeature(featureItem, sidebarReleases)}
+    ${buildHomeNewsSection(latestNews)}
+    ${latestPodcasts.length > 0 ? buildHomePodcastSection(latestPodcasts) : ''}
+    ${topGundem ? buildHomeGundemSection(topGundem) : ''}
+  </div>`;
+
+  // Event-lər
+  attachHomeEvents(container);
+}
+
+function buildHomeFeature(item, sidebarItems) {
+  if (!item) {
+    return `
+    <section class="feature-section">
+      <div class="feature-main">
+        <div class="section-tag">SON XƏBƏR</div>
+        <h1 class="feature-title" style="font-size:28px;color:#AAA;">Hələ xəbər əlavə edilməyib</h1>
+      </div>
+      <aside class="feature-sidebar">${buildSidebarItems(sidebarItems)}</aside>
+    </section>`;
+  }
+
+  const tagLabel = item.tags && item.tags.length > 0
+    ? item.tags[0].replace('#', '').toUpperCase()
+    : 'XƏBƏRİ';
+
+  const wordCount = ((item.body || item.description || '')).split(/\s+/).filter(Boolean).length;
+  const readMin = Math.max(1, Math.round(wordCount / 180));
+
+  const scoreTotal = getCommentScore(item);
+  const commentBadge = scoreTotal > 0
+    ? `<span>//</span><span>💬 ${scoreTotal} YORUM</span>`
+    : '';
+
+  return `
+  <section class="feature-section" id="homeFeatureSection">
+    <div class="feature-main" data-id="${escHtml(item.id)}" data-src="${escHtml(item._src || 'news')}">
+      <div class="section-tag">HƏFTƏNIN ƏN ÇOX MÜZAKIRƏ OLUNANI</div>
+      <h1 class="feature-title">${escHtml(item.title || '')}</h1>
+      <p class="feature-lead">${escHtml((item.body || item.description || '').slice(0, 180))}${((item.body || item.description || '').length > 180 ? '…' : '')}</p>
+      <div class="feature-meta">
+        <span>${escHtml(item.date || '')}</span>
+        <span>//</span>
+        <span>${tagLabel}</span>
+        <span>//</span>
+        <span>${readMin} DƏQ OXU</span>
+        ${commentBadge}
+      </div>
+    </div>
+    <aside class="feature-sidebar">
+      ${buildSidebarItems(sidebarItems)}
+    </aside>
+  </section>`;
+}
+
+function buildSidebarItems(items) {
+  if (!items || items.length === 0) {
+    return `<div class="sidebar-loading">RELIZ YOXDUR</div>`;
+  }
+  const nums = ['01', '02', '03', '04'];
+  return items.map((item, i) => {
+    const thumb = item.thumbnail
+      ? `<img class="sidebar-thumb" src="${escHtml(item.thumbnail)}" alt="${escHtml(item.title)}" />`
+      : `<div class="sidebar-thumb-placeholder">♪</div>`;
+    const score = getCommentScore(item);
+    const commentHint = score > 0 ? `<small style="color:#888;font-size:9px;">💬 ${score}</small>` : '';
+    return `
+    <div class="sidebar-item" data-id="${escHtml(item.id)}" data-src="release">
+      <span class="sidebar-num">${nums[i] || '0' + (i+1)}</span>
+      ${thumb}
+      <div class="sidebar-body">
+        <div class="sidebar-cat" style="display:flex;align-items:center;gap:6px;">
+          ${item.releaseType ? `<span class="sidebar-type-badge">${escHtml(item.releaseType)}</span>` : ''}
+          ${commentHint}
+        </div>
+        <div class="sidebar-title">${escHtml(item.title)}</div>
+        <div style="font-family:'Inter',sans-serif;font-size:10px;color:#888;margin-top:3px;">${escHtml(item.artist || '')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildHomeNewsSection(items) {
+  const cards = items.length === 0
+    ? `<div style="grid-column:1/-1;text-align:center;padding:40px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#AAA;letter-spacing:2px;">HƏLƏ XƏBƏRLƏRİ ƏLAVƏ EDİLMƏYİB</div>`
+    : items.map(item => buildNewsCard(item)).join('');
+
+  return `
+  <section class="home-news-section">
+    <div class="section-header">
+      <div class="section-tag">SON XƏBƏRLƏR</div>
+      <button class="section-see-all" data-goto="news">BÜTÜN XƏBƏRLƏR →</button>
+    </div>
+    <div class="home-news-grid home-news-cards">
+      ${cards}
+    </div>
+  </section>`;
+}
+
+function buildHomePodcastSection(items) {
+  const cards = items.map(item => buildPodcastCard(item)).join('');
+  return `
+  <section class="home-podcast-section">
+    <div class="section-header">
+      <div class="section-tag">PODCASTLAR</div>
+      <button class="section-see-all" data-goto="interview">HAMISI →</button>
+    </div>
+    <div class="home-podcast-grid home-podcast-cards">
+      ${cards}
+    </div>
+  </section>`;
+}
+
+function buildHomeGundemSection(topic) {
+  const score = getCommentScore(topic);
+  const hot   = score >= 5;
+  const preview = (topic.body || '').slice(0, 140);
+
+  return `
+  <section class="home-gundem-section">
+    <div class="section-header">
+      <div class="section-tag">ƏN ÇOX MÜZAKİRƏ OLUNAN</div>
+      <button class="section-see-all" data-goto="world">GÜNDƏM →</button>
+    </div>
+    <div class="home-gundem-card" data-goto="world">
+      <div class="home-gundem-card-left">
+        <div class="home-gundem-card-badges">
+          ${hot ? `<span class="home-gundem-hot">🔥 TREND</span>` : ''}
+          <span class="home-gundem-label">GÜNDƏM MÖVZUSu</span>
+        </div>
+        <div class="home-gundem-title">${escHtml(topic.title || '')}</div>
+        ${preview ? `<div class="home-gundem-body">${escHtml(preview)}${topic.body && topic.body.length > 140 ? '…' : ''}</div>` : ''}
+        <div class="home-gundem-meta">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span>${escHtml(topic.author || 'Anonim')}</span>
+          <span>·</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>${score} yorum</span>
+        </div>
+      </div>
+      <div class="home-gundem-card-right">
+        <div class="home-gundem-count">${score}</div>
+        <div class="home-gundem-count-label">YORUM</div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function attachHomeEvents(container) {
+  // Feature xəbər — klik edildikdə xəbəri aç
+  const featureMain = container.querySelector('.feature-main[data-id]');
+  if (featureMain) {
+    featureMain.addEventListener('click', () => {
+      const id  = featureMain.dataset.id;
+      const src = featureMain.dataset.src;
+      if (src === 'news') {
+        const item = news.find(n => n.id === id);
+        if (item) {
+          // Xəbər bölümünə keç və genişləndir
+          const { setCurrentSection } = window.__uiModule || {};
+          import('./ui.js').then(ui => {
+            ui.setCurrentSectionExt('news');
+            renderView();
+            // Render-dən sonra kart tap
+            setTimeout(() => {
+              const card = document.querySelector(`.news-card[data-id="${id}"]`);
+              const grid = document.getElementById('newsGrid');
+              if (card && grid) {
+                toggleExpandedRow(card, item, grid);
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }, 150);
+          });
+        }
+      }
+    });
+  }
+
+  // Sidebar reliz itemlər
+  container.querySelectorAll('.sidebar-item[data-id]').forEach(el => {
+    el.addEventListener('click', () => {
+      import('./ui.js').then(ui => {
+        ui.setCurrentSectionExt('albums');
+        renderView();
+        setTimeout(() => {
+          const card = document.querySelector(`.release-card[data-id="${el.dataset.id}"]`);
+          const grid = document.getElementById('newsGrid');
+          if (card && grid) {
+            const item = releases.find(r => r.id === el.dataset.id);
+            if (item) {
+              card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              card.click();
+            }
+          }
+        }, 150);
+      });
+    });
+  });
+
+  // "Bütün xəbərlər", "Hamısı" düymələri
+  container.querySelectorAll('[data-goto]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const section = btn.dataset.goto;
+      import('./ui.js').then(ui => {
+        ui.setCurrentSectionExt(section);
+        renderView();
+      });
+    });
+  });
+
+  // Home news cards
+  const homeNewsGrid = container.querySelector('.home-news-cards');
+  if (homeNewsGrid) {
+    homeNewsGrid.querySelectorAll('.news-card').forEach(card => {
+      card.addEventListener('click', e => {
+        if (e.target.closest('.news-card-link-btn')) return;
+        const id   = card.dataset.id;
+        const item = news.find(n => n.id === id);
+        if (!item) return;
+        import('./ui.js').then(ui => {
+          ui.setCurrentSectionExt('news');
+          renderView();
+          setTimeout(() => {
+            const c2 = document.querySelector(`.news-card[data-id="${id}"]`);
+            const g  = document.getElementById('newsGrid');
+            if (c2 && g) { toggleExpandedRow(c2, item, g); c2.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+          }, 150);
+        });
+      });
+    });
+    homeNewsGrid.querySelectorAll('.news-card-link-btn[data-href]').forEach(btn => {
+      btn.addEventListener('click', e => { e.stopPropagation(); window.open(btn.dataset.href, '_blank'); });
+    });
+  }
+
+  // Home podcast cards
+  const podGrid = container.querySelector('.home-podcast-cards');
+  if (podGrid) {
+    podGrid.querySelectorAll('.news-card').forEach(card => {
+      card.addEventListener('click', e => {
+        if (e.target.closest('.news-card-link-btn')) return;
+        const id   = card.dataset.id;
+        const item = podcasts.find(p => p.id === id);
+        if (!item) return;
+        import('./ui.js').then(ui => {
+          ui.setCurrentSectionExt('interview');
+          renderView();
+          setTimeout(() => {
+            const c2 = document.querySelector(`.news-card[data-id="${id}"]`);
+            const g  = document.getElementById('newsGrid');
+            if (c2 && g) { c2.click(); c2.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+          }, 150);
+        });
+      });
+    });
+    podGrid.querySelectorAll('.news-card-link-btn[data-href]').forEach(btn => {
+      btn.addEventListener('click', e => { e.stopPropagation(); window.open(btn.dataset.href, '_blank'); });
+    });
+  }
 }
 
 // ============================================================

@@ -337,3 +337,11 @@ export function initDrawer() {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
 }
 
+
+// Ana səhifə daxilindən section dəyişmək üçün köməkçi funksiya
+export function setCurrentSectionExt(section) {
+  setCurrentSection(section);
+  document.querySelectorAll('.drawer-link').forEach(l => {
+    l.classList.toggle('active', l.dataset.section === section);
+  });
+}

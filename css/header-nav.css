@@ -319,7 +319,64 @@
 .drawer-add-news {
   padding: 20px 24px;
   border-bottom: 1px solid #222;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
 }
+.drawer-add-news.admin-visible {
+  display: flex;
+}
+
+/* Drawer profil mini blok */
+.drawer-profile {
+  padding: 16px 24px;
+  border-bottom: 1px solid #222;
+}
+.drawer-profile-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.drawer-profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #FF3C00;
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #555;
+  flex-shrink: 0;
+}
+.drawer-profile-avatar.admin-avatar {
+  background: #333;
+  border-color: #FF3C00;
+}
+.drawer-profile-info { flex: 1; min-width: 0; }
+.drawer-profile-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.drawer-profile-role {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: #FF3C00;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.drawer-profile-role.user-role { color: #666; }
+
 
 .drawer-nav {
   display: flex;

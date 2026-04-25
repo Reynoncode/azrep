@@ -1,0 +1,211 @@
+/* ==============================
+   auth.css — Giriş / Qeydiyyat / Profil
+   ============================== */
+
+/* ─── NAV PROFİL DÜYMƏSI ─────────────────────────────────────── */
+.nav-profile {
+  cursor: pointer !important;
+  opacity: 1 !important;
+  transition: opacity 0.15s;
+  position: relative;
+}
+.nav-profile:hover { opacity: 0.75 !important; }
+
+/* Avatar dairəsi (giriş edilib) */
+.nav-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #FF3C00;
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #0D0D0D;
+  flex-shrink: 0;
+}
+.nav-avatar.admin-avatar {
+  background: #0D0D0D;
+  border-color: #FF3C00;
+}
+
+/* ─── AUTH MODAL ─────────────────────────────────────────────── */
+#authModal .modal-box {
+  max-width: 420px;
+}
+
+.auth-tabs {
+  display: flex;
+  border-bottom: 2px solid #0D0D0D;
+  margin-bottom: 24px;
+}
+.auth-tab {
+  flex: 1;
+  padding: 12px 0;
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: #AAA;
+  transition: color 0.15s;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+}
+.auth-tab.active {
+  color: #0D0D0D;
+  border-bottom-color: #FF3C00;
+}
+
+.auth-panel { display: none; }
+.auth-panel.active { display: block; }
+
+.auth-error {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: #FF3C00;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  min-height: 16px;
+  display: none;
+}
+.auth-error.visible { display: block; }
+
+.auth-success {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: #2a9d2a;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  display: none;
+}
+.auth-success.visible { display: block; }
+
+.auth-submit-btn {
+  width: 100%;
+  padding: 13px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  background: #FF3C00;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-top: 4px;
+}
+.auth-submit-btn:hover { background: #cc3000; }
+.auth-submit-btn:disabled {
+  background: #CCC;
+  cursor: not-allowed;
+}
+
+/* ─── PROFİL PANEL (giriş edildikdən sonra) ─────────────────── */
+.profile-panel {
+  padding: 4px 0 8px;
+}
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 0 20px;
+  border-bottom: 1px solid #E0DDD8;
+  margin-bottom: 20px;
+}
+.profile-avatar-lg {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #FF3C00;
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #0D0D0D;
+  flex-shrink: 0;
+}
+.profile-avatar-lg.admin-avatar { background: #0D0D0D; border-color: #FF3C00; }
+
+.profile-info { flex: 1; min-width: 0; }
+.profile-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0D0D0D;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.profile-email {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #888;
+  letter-spacing: 0.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.profile-role-badge {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 2px 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.profile-role-badge.admin {
+  background: #FF3C00;
+  color: #fff;
+}
+.profile-role-badge.user {
+  background: #E0DDD8;
+  color: #555;
+}
+
+.profile-logout-btn {
+  width: 100%;
+  padding: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: none;
+  color: #888;
+  border: 2px solid #E0DDD8;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.profile-logout-btn:hover {
+  border-color: #FF3C00;
+  color: #FF3C00;
+}
+
+/* ─── DRAWER — Admin düymələrinin gizlədilməsi ───────────────── */
+.drawer-add-news { display: none; }
+.drawer-add-news.admin-visible { display: flex; }
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  #authModal .modal-box { max-width: 100%; }
+  .profile-avatar-lg { width: 44px; height: 44px; font-size: 17px; }
+  .profile-name { font-size: 17px; }
+}

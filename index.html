@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="css/artists.css" />
   <link rel="stylesheet" href="css/gundem.css" />
   <link rel="stylesheet" href="css/homepage.css" />
+  <link rel="stylesheet" href="css/auth.css" />
   <link rel="stylesheet" href="css/responsive.css" />
 </head>
 <body>
@@ -46,7 +47,7 @@
       </div>
 
       <!-- Sağ: Profil -->
-      <div class="nav-profile" title="Profil (tezliklə)">
+      <div class="nav-profile" id="navProfileBtn" title="Giriş et / Qeydiyyat">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
           <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/>
           <path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
@@ -411,7 +412,11 @@
     <div class="drawer-header">
       <button class="drawer-close" id="drawerClose">✕</button>
     </div>
-    <div class="drawer-add-news">
+    <!-- Drawer profil mini blok -->
+    <div class="drawer-profile" id="drawerProfile" style="display:none;">
+      <div class="drawer-profile-inner" id="drawerProfileInner"></div>
+    </div>
+    <div class="drawer-add-news" id="drawerAdminBtns">
       <button class="add-news-btn" id="openModalBtn">+ XƏBƏR ƏLAVƏ ET</button>
       <button class="add-news-btn add-artist-btn" id="openArtistModalBtnDrawer">+ SƏNƏTÇİ ƏLAVƏ ET</button>
     </div>
@@ -519,6 +524,65 @@
           <textarea id="gundemTopicBody" class="form-textarea" placeholder="Mövzu haqqında ətraflı yaz..." style="min-height:100px;"></textarea>
         </div>
         <button class="publish-btn" id="gundemPublishBtn">MÖVZUNU AÇ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== AUTH MODAL ===================== -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title" id="authModalTitle">HESAB</span>
+        <button class="modal-close" id="closeAuthModalBtn">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- GİRİŞ / QEYDİYYAT tabları -->
+        <div id="authFormArea">
+          <div class="auth-tabs">
+            <button class="auth-tab active" data-auth-tab="login">GİRİŞ</button>
+            <button class="auth-tab" data-auth-tab="register">QEYDİYYAT</button>
+          </div>
+
+          <!-- GİRİŞ PANELİ -->
+          <div class="auth-panel active" id="authLoginPanel">
+            <div class="auth-error" id="loginError"></div>
+            <div class="form-group">
+              <label class="form-label">E-MAIL</label>
+              <input type="email" id="loginEmail" class="form-input" placeholder="mail@example.com" autocomplete="email" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">ŞİFRƏ</label>
+              <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" autocomplete="current-password" />
+            </div>
+            <button class="auth-submit-btn" id="loginSubmitBtn">GİRİŞ ET</button>
+          </div>
+
+          <!-- QEYDİYYAT PANELİ -->
+          <div class="auth-panel" id="authRegisterPanel">
+            <div class="auth-error" id="registerError"></div>
+            <div class="auth-success" id="registerSuccess"></div>
+            <div class="form-group">
+              <label class="form-label">ADINIIZ</label>
+              <input type="text" id="registerName" class="form-input" placeholder="Ad Soyad" maxlength="50" autocomplete="name" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">E-MAIL</label>
+              <input type="email" id="registerEmail" class="form-input" placeholder="mail@example.com" autocomplete="email" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">ŞİFRƏ <span class="form-label-note">(min. 6 hərf)</span></label>
+              <input type="password" id="registerPassword" class="form-input" placeholder="••••••••" autocomplete="new-password" />
+            </div>
+            <button class="auth-submit-btn" id="registerSubmitBtn">HESAB YARAт</button>
+          </div>
+        </div>
+
+        <!-- PROFİL PANELİ (giriş edildikdən sonra) -->
+        <div id="authProfileArea" style="display:none;">
+          <div class="profile-panel" id="profilePanelContent"></div>
+        </div>
+
       </div>
     </div>
   </div>

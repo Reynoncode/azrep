@@ -8,6 +8,7 @@ import { initPublish, loadNews } from './news.js';
 import { initArtistModal, closeArtistProfile } from './artists.js';
 import { initGundemModal } from './gundem.js';
 import { initSearch } from './search.js';
+import { initAuthUI } from './authui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // Logo click üçün closeArtistProfile-i qlobal et
@@ -26,5 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initArtistModal();
   initGundemModal();
   initSearch();
+  initAuthUI();   // Auth UI — ən sonda, digər sistemlər hazır olandan sonra
   loadNews();
 });

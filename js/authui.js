@@ -67,13 +67,13 @@ function updateNavProfile(user, userData) {
   const btn = document.getElementById('navProfileBtn');
   if (!btn) return;
 
-  if (user && userData) {
-    const initials  = getInitials(userData.displayName || user.displayName);
-    const adminCls  = userData.role === 'admin' ? 'admin-avatar' : '';
-    const title     = userData.role === 'admin'
-      ? `${userData.displayName} — Admin`
-      : userData.displayName;
-    btn.innerHTML   = `<div class="nav-avatar ${adminCls}" title="${title}">${initials}</div>`;
+  if (user) {
+    const displayName = userData?.displayName || user.displayName || user.email?.split('@')[0] || 'İstifadəçi';
+    const role        = userData?.role || 'user';
+    const initials    = getInitials(displayName);
+    const adminCls    = role === 'admin' ? 'admin-avatar' : '';
+    const title       = role === 'admin' ? `${displayName} — Admin` : displayName;
+    btn.innerHTML     = `<div class="nav-avatar ${adminCls}" title="${title}">${initials}</div>`;
   } else {
     btn.innerHTML   = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
       <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/>
@@ -89,24 +89,26 @@ function updateDrawer(user, userData) {
   const innerEl     = document.getElementById('drawerProfileInner');
   const adminBtns   = document.getElementById('drawerAdminBtns');
 
-  if (user && userData) {
-    const initials = getInitials(userData.displayName || user.displayName);
-    const adminCls = userData.role === 'admin' ? 'admin-avatar' : '';
-    const roleLabel = userData.role === 'admin' ? 'Admin' : 'İstifadəçi';
-    const roleCls   = userData.role === 'admin' ? '' : 'user-role';
+  if (user) {
+    const displayName = userData?.displayName || user.displayName || user.email?.split('@')[0] || 'İstifadəçi';
+    const role        = userData?.role || 'user';
+    const initials    = getInitials(displayName);
+    const adminCls    = role === 'admin' ? 'admin-avatar' : '';
+    const roleLabel   = role === 'admin' ? 'Admin' : 'İstifadəçi';
+    const roleCls     = role === 'admin' ? '' : 'user-role';
 
     if (profileEl) profileEl.style.display = '';
     if (innerEl) {
       innerEl.innerHTML = `
         <div class="drawer-profile-avatar ${adminCls}">${initials}</div>
         <div class="drawer-profile-info">
-          <div class="drawer-profile-name">${userData.displayName || 'İstifadəçi'}</div>
+          <div class="drawer-profile-name">${displayName}</div>
           <div class="drawer-profile-role ${roleCls}">${roleLabel}</div>
         </div>`;
     }
     // Admin olarsa əlavə et düymələrini göstər
     if (adminBtns) {
-      adminBtns.classList.toggle('admin-visible', userData.role === 'admin');
+      adminBtns.classList.toggle('admin-visible', role === 'admin');
     }
   } else {
     if (profileEl) profileEl.style.display = 'none';
@@ -120,16 +122,20 @@ function updateAuthModalContent(user, userData) {
   const profileArea = document.getElementById('authProfileArea');
   const titleEl     = document.getElementById('authModalTitle');
 
-  if (user && userData) {
-    // Profil görünüşü
+  if (user) {
+    // Profil görünüşü — userData olmasa belə user varsa profili göstər
     if (formArea)    formArea.style.display    = 'none';
     if (profileArea) profileArea.style.display = '';
     if (titleEl)     titleEl.textContent       = 'PROFİL';
 
-    const initials = getInitials(userData.displayName || user.displayName);
-    const adminCls = userData.role === 'admin' ? 'admin-avatar' : '';
-    const roleLabel = userData.role === 'admin' ? 'Admin' : 'İstifadəçi';
-    const roleCls   = userData.role === 'admin' ? 'admin' : 'user';
+    // userData Firestore-dan gəlməyibsə Firebase Auth məlumatlarını istifadə et
+    const displayName = userData?.displayName || user.displayName || user.email?.split('@')[0] || 'İstifadəçi';
+    const role        = userData?.role || 'user';
+
+    const initials  = getInitials(displayName);
+    const adminCls  = role === 'admin' ? 'admin-avatar' : '';
+    const roleLabel = role === 'admin' ? 'Admin' : 'İstifadəçi';
+    const roleCls   = role === 'admin' ? 'admin' : 'user';
 
     const content = document.getElementById('profilePanelContent');
     if (content) {
@@ -137,12 +143,12 @@ function updateAuthModalContent(user, userData) {
         <div class="profile-header">
           <div class="profile-avatar-lg ${adminCls}">${initials}</div>
           <div class="profile-info">
-            <div class="profile-name">${userData.displayName || 'İstifadəçi'}</div>
+            <div class="profile-name">${displayName}</div>
             <div class="profile-email">${user.email}</div>
             <span class="profile-role-badge ${roleCls}">${roleLabel}</span>
           </div>
         </div>
-        ${userData.role !== 'admin' ? `
+        ${role !== 'admin' ? `
         <div style="padding:12px 0 20px;">
           <p style="font-family:'Inter',sans-serif;font-size:12px;color:#888;line-height:1.6;">
             Admin səlahiyyəti sayt rəhbərliyi tərəfindən verilir. 

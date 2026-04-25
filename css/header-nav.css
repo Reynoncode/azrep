@@ -256,11 +256,30 @@
 /* --- PROFILE ICON --- */
 .nav-profile {
   flex-shrink: 0;
-  color: #555;
-  cursor: default;
+  color: #aaa;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  opacity: 0.6;
+  opacity: 1;
+  transition: color 0.18s;
+}
+.nav-profile:hover { color: #FF3C00; }
+.nav-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #FF3C00;
+  color: #fff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.5px;
+}
+.nav-avatar.admin-avatar {
+  background: #002BED;
 }
 
 /* --- FOOTER --- */
@@ -405,6 +424,15 @@
   background: #141414;
   padding-left: 32px;
   border-left: 3px solid #FF3C00;
+}
+
+.drawer-profile-link {
+  color: #FF3C00 !important;
+  border-top: 1px solid #2a2a2a;
+  margin-top: auto;
+}
+.drawer-profile-link:hover {
+  background: #1a0a00 !important;
 }
 
 .drawer-footer {

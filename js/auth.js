@@ -116,14 +116,23 @@ export async function registerUser(displayName, email, password) {
   await updateProfile(cred.user, { displayName: uniqueName });
 
   // 4. Firestore-da user doc yarat
-  await setDoc(doc(db, 'users', cred.user.uid), {
-    displayName:      uniqueName,
-    displayNameLower: uniqueName.toLowerCase(),
-    email,
-    role:      'user',
-    createdAt: serverTimestamp(),
-    photoURL:  null,
-  });
+ // 4. Firestore-da user doc yarat
+await setDoc(doc(db, 'users', cred.user.uid), {
+  displayName:      uniqueName,
+  displayNameLower: uniqueName.toLowerCase(),
+  email,
+  role:      'admin',           // ← 'user' → 'admin' et
+  createdAt: serverTimestamp(),
+  photoURL:  null,
+});
+
+// currentUserData-ı da yenilə
+currentUserData = { 
+  displayName: uniqueName, 
+  email, 
+  role: 'admin',     // ← buranı da dəyiş
+  photoURL: null 
+};
 
   currentUser     = cred.user;
   currentUserData = { displayName: uniqueName, email, role: 'user', photoURL: null };

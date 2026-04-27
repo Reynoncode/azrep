@@ -962,6 +962,12 @@ async function publishRelease() {
     if (thumbInput.files[0]) {
       const b64 = await fileToBase64(thumbInput.files[0]);
       thumbnail = await compressImage(b64, 600, 0.8);
+    } else {
+      // YouTube thumbnail — imgEl.src-dən oxu
+      const thumbImg = document.getElementById('releaseThumbImg');
+      if (thumbImg && thumbImg.dataset.ytUrl) {
+        thumbnail = thumbImg.dataset.ytUrl;
+      }
     }
     const taggedArtists = (taggedArtistsByForm.release || []).map(a => ({ id: a.id, name: a.name, slug: a.slug }));
     const docData = { title, artist, link, releaseType, description: desc, tags, taggedArtists, thumbnail, date: dateStr, postType: 'release', createdAt: serverTimestamp() };
@@ -1003,9 +1009,16 @@ async function publishPodcast() {
     if (thumbInput.files[0]) {
       const b64 = await fileToBase64(thumbInput.files[0]);
       thumbnail = await compressImage(b64, 600, 0.8);
+    } else {
+      // YouTube thumbnail — imgEl.src-dən oxu
+      const thumbImg = document.getElementById('podcastThumbImg');
+      if (thumbImg && thumbImg.dataset.ytUrl) {
+        thumbnail = thumbImg.dataset.ytUrl;
+      }
     }
+    const podcastArtist = document.getElementById('podcastArtist')?.value.trim() || '';
     const taggedArtists = (taggedArtistsByForm.podcast || []).map(a => ({ id: a.id, name: a.name, slug: a.slug }));
-    const docData = { title, category, link, description: desc, tags, taggedArtists, thumbnail, date: dateStr, postType: 'podcast', createdAt: serverTimestamp() };
+    const docData = { title, artist: podcastArtist, category, link, description: desc, tags, taggedArtists, thumbnail, date: dateStr, postType: 'podcast', createdAt: serverTimestamp() };
     const docRef  = await addDoc(collection(db, 'podcasts'), docData);
     pushPodcast({ id: docRef.id, ...docData });
     renderView();

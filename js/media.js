@@ -15,6 +15,7 @@ import { fetchYouTubeData, thumbnailToBase64, extractYouTubeId } from './youtube
 // ---- RESET FORM ----
 export function resetForm() {
   document.getElementById('newsTitle').value    = '';
+  const _pa = document.getElementById('podcastArtist'); if (_pa) _pa.value = '';
   document.getElementById('newsBody').value     = '';
   document.getElementById('newsLink').value     = '';
   document.getElementById('newsBtnLabel').value = '';
@@ -55,13 +56,17 @@ export function initLinkInput() {
 // YOUTUBE AUTOFILL — Reliz & Podcast formları üçün
 // ============================================================
 
-// Thumbnail-i thumb preview-ə tətbiq et (base64 ya da URL)
+// Thumbnail-i thumb preview-ə tətbiq et (URL və ya base64)
+// data-yt-url atributunda URL-i saxlayırıq — publish zamanı oxuyacaq
 function applyThumbPreview(formType, src) {
   const imgEl    = document.getElementById(`${formType}ThumbImg`);
   const preview  = document.getElementById(`${formType}ThumbPreview`);
   const zone     = document.getElementById(`${formType}ThumbZone`);
   const label    = document.getElementById(`${formType}ThumbLabel`);
-  if (imgEl)   imgEl.src = src;
+  if (imgEl) {
+    imgEl.src = src;
+    imgEl.dataset.ytUrl = src; // publish zamanı oxumaq üçün
+  }
   if (preview) preview.style.display = '';
   if (zone)    zone.style.display    = 'none';
   if (label)   label.innerHTML       = '<span>✓ YouTube thumbnail</span>';
@@ -150,19 +155,10 @@ function initYtAutofillForForm(formType) {
       linkField.value = pendingData.watchUrl;
     }
 
-    // Thumbnail — əvvəl base64 cəhdi et, alınmasa URL ilə göstər
-    setStatus('Thumbnail yüklənir...', false);
-    try {
-      const b64 = await thumbnailToBase64(pendingData.thumbnail, pendingData.thumbnailFallback);
-      if (b64) {
-        applyThumbPreview(formType, b64);
-      } else {
-        // CORS xətası — URL-i birbaşa istifadə et
-        applyThumbPreview(formType, pendingData.thumbnail);
-      }
-    } catch {
-      applyThumbPreview(formType, pendingData.thumbnail);
-    }
+    // Thumbnail — URL ilə imgEl.src-ə tətbiq et, data-yt-url-də saxla
+    // (img.youtube.com CORS icazəsi vermir, base64 cəhdinə ehtiyac yoxdur)
+    setStatus('Thumbnail tətbiq edilir...', false);
+    applyThumbPreview(formType, pendingData.thumbnailFallback);
 
     setStatus('✓ Avtomatik dolduruldu', false);
     if (confirmEl) confirmEl.style.display = 'none';

@@ -137,6 +137,7 @@ export function initModal() {
   });
   document.getElementById('releaseThumbRemove').addEventListener('click', () => {
     releaseThumbImg.src = '';
+    delete releaseThumbImg.dataset.ytUrl;
     releaseThumbInput.value = '';
     releaseThumbPreview.style.display = 'none';
     releaseThumbZone.style.display = '';
@@ -161,6 +162,7 @@ export function initModal() {
   });
   document.getElementById('podcastThumbRemove').addEventListener('click', () => {
     podcastThumbImg.src = '';
+    delete podcastThumbImg.dataset.ytUrl;
     podcastThumbInput.value = '';
     podcastThumbPreview.style.display = 'none';
     podcastThumbZone.style.display = '';

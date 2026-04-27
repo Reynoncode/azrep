@@ -9,6 +9,7 @@ import { initArtistModal, closeArtistProfile } from './artists.js';
 import { initGundemModal } from './gundem.js';
 import { initSearch } from './search.js';
 import { initAuthUI } from './authui.js';
+import { initAdminPanelBtn } from './adminpanel.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   window.__artistModule = { closeArtistProfile };
@@ -28,5 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initGundemModal();
   initSearch();
   initAuthUI();
+  initAdminPanelBtn();
   loadNews();
 });

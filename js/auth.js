@@ -16,6 +16,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  updateDoc,
   serverTimestamp,
   collection,
   query,
@@ -25,7 +26,6 @@ import {
 
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 
-// Firebase app-i təkrar init etməmək üçün mövcud app-i istifadə et
 const firebaseConfig = {
   apiKey: 'AIzaSyDzCQsF10gofC5sdwIXK2wlX0QKRxY4vE4',
   authDomain: 'hiprhyme-2587e.firebaseapp.com',
@@ -40,8 +40,8 @@ const auth = getAuth(app);
 const db   = getFirestore(app);
 
 // ─── Cari istifadəçi state-i ──────────────────────────────────
-export let currentUser     = null;  // Firebase Auth user
-export let currentUserData = null;  // Firestore user doc {displayName, role, ...}
+export let currentUser     = null;
+export let currentUserData = null;
 
 // ─── Auth state dəyişikliyi ───────────────────────────────────
 export function initAuth(onUserChange) {
@@ -68,24 +68,37 @@ async function fetchUserData(uid) {
   }
 }
 
+// ─── Bütün istifadəçiləri çək (yalnız admin üçün) ────────────
+export async function fetchAllUsers() {
+  try {
+    const snap = await getDocs(collection(db, 'users'));
+    return snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+  } catch (e) {
+    console.error('fetchAllUsers error:', e);
+    return [];
+  }
+}
+
+// ─── İstifadəçinin rolunu dəyişdir (yalnız admin üçün) ────────
+export async function setUserRole(uid, role) {
+  await updateDoc(doc(db, 'users', uid), { role });
+}
+
 // ─── Ad validasiyası ──────────────────────────────────────────
 export function validateDisplayName(name) {
   const trimmed = name.trim();
   if (trimmed.length < 4)  return 'Ad minimum 4 hərf olmalıdır.';
   if (trimmed.length > 20) return 'Ad maximum 20 hərf ola bilər.';
-  return null; // ok
+  return null;
 }
 
-// ─── Ad unikallığını yoxla (yalnız auth user varsa çalışır) ───
-// Qeydiyyat SONRASI çağırılır — token artıq mövcuddur
+// ─── Ad unikallığını yoxla ────────────────────────────────────
 async function isNameTaken(name, excludeUid) {
   try {
     const q    = query(collection(db, 'users'), where('displayNameLower', '==', name.toLowerCase()));
     const snap = await getDocs(q);
-    // Öz doc-u sayma
     return snap.docs.some(d => d.id !== excludeUid);
   } catch (e) {
-    // İcazə xətası — ad mövcud deyil sayırıq (safe fallback)
     console.warn('Name check skipped (permission):', e.code);
     return false;
   }
@@ -102,37 +115,27 @@ async function findUniqueName(base, uid) {
 }
 
 // ─── QEYDİYYAT ───────────────────────────────────────────────
-// Strategiya: əvvəl Auth hesab yarat (token alınır), sonra Firestore oxu/yaz
 export async function registerUser(displayName, email, password) {
   const baseName = displayName.trim();
 
-  // 1. Firebase Auth hesabı yarat — bu nöqtədən token mövcuddur
+  // 1. Firebase Auth hesabı yarat
   const cred = await createUserWithEmailAndPassword(auth, email, password);
 
-  // 2. İndi Firestore-a token ilə sorğu göndərə bilirik
+  // 2. Unikal ad tap
   const uniqueName = await findUniqueName(baseName, cred.user.uid);
 
   // 3. Auth profil adını yenilə
   await updateProfile(cred.user, { displayName: uniqueName });
 
-  // 4. Firestore-da user doc yarat
- // 4. Firestore-da user doc yarat
-await setDoc(doc(db, 'users', cred.user.uid), {
-  displayName:      uniqueName,
-  displayNameLower: uniqueName.toLowerCase(),
-  email,
-  role:      'admin',           // ← 'user' → 'admin' et
-  createdAt: serverTimestamp(),
-  photoURL:  null,
-});
-
-// currentUserData-ı da yenilə
-currentUserData = { 
-  displayName: uniqueName, 
-  email, 
-  role: 'admin',     // ← buranı da dəyiş
-  photoURL: null 
-};
+  // 4. Firestore-da user doc yarat (role: 'user')
+  await setDoc(doc(db, 'users', cred.user.uid), {
+    displayName:      uniqueName,
+    displayNameLower: uniqueName.toLowerCase(),
+    email,
+    role:      'user',
+    createdAt: serverTimestamp(),
+    photoURL:  null,
+  });
 
   currentUser     = cred.user;
   currentUserData = { displayName: uniqueName, email, role: 'user', photoURL: null };

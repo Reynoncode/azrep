@@ -55,13 +55,13 @@ export function initLinkInput() {
 // YOUTUBE AUTOFILL — Reliz & Podcast formları üçün
 // ============================================================
 
-// Thumbnail-i thumb preview-ə tətbiq et
-function applyThumbPreview(formType, base64) {
+// Thumbnail-i thumb preview-ə tətbiq et (base64 ya da URL)
+function applyThumbPreview(formType, src) {
   const imgEl    = document.getElementById(`${formType}ThumbImg`);
   const preview  = document.getElementById(`${formType}ThumbPreview`);
   const zone     = document.getElementById(`${formType}ThumbZone`);
   const label    = document.getElementById(`${formType}ThumbLabel`);
-  if (imgEl)   imgEl.src = base64;
+  if (imgEl)   imgEl.src = src;
   if (preview) preview.style.display = '';
   if (zone)    zone.style.display    = 'none';
   if (label)   label.innerHTML       = '<span>✓ YouTube thumbnail</span>';
@@ -132,23 +132,39 @@ function initYtAutofillForForm(formType) {
       titleInput.dispatchEvent(new Event('input'));
     }
 
+    // Sənətçi — YouTube kanal adı
+    const artistInput = document.getElementById(`${formType}Artist`);
+    if (artistInput && !artistInput.value.trim() && pendingData.author) {
+      artistInput.value = pendingData.author;
+    }
+
+    // Açıqlama
+    const descInput = document.getElementById(`${formType}Desc`);
+    if (descInput && !descInput.value.trim() && pendingData.description) {
+      descInput.value = pendingData.description;
+    }
+
     // Link (platform link sahəsinə)
     const linkField = document.getElementById(`${formType}Link`);
     if (linkField && !linkField.value.trim()) {
       linkField.value = pendingData.watchUrl;
     }
 
-    // Thumbnail base64-ə çevir
+    // Thumbnail — əvvəl base64 cəhdi et, alınmasa URL ilə göstər
+    setStatus('Thumbnail yüklənir...', false);
     try {
-      setStatus('Thumbnail yüklənir...', false);
       const b64 = await thumbnailToBase64(pendingData.thumbnail, pendingData.thumbnailFallback);
-      applyThumbPreview(formType, b64);
-      setStatus('✓ Avtomatik dolduruldu', false);
+      if (b64) {
+        applyThumbPreview(formType, b64);
+      } else {
+        // CORS xətası — URL-i birbaşa istifadə et
+        applyThumbPreview(formType, pendingData.thumbnail);
+      }
     } catch {
-      // Thumbnail alınmasa da digər sahələr dolub
-      setStatus('✓ Başlıq və link dolduruldu (thumbnail alınmadı)', false);
+      applyThumbPreview(formType, pendingData.thumbnail);
     }
 
+    setStatus('✓ Avtomatik dolduruldu', false);
     if (confirmEl) confirmEl.style.display = 'none';
     confirmYes.disabled    = false;
     confirmYes.textContent = '✓ Tətbiq et';

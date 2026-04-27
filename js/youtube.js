@@ -21,37 +21,49 @@ export function getYouTubeThumbnail(videoId) {
   return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 }
 
-// YouTube oEmbed API ilə başlıq + açıqlama çək
-// Not: oEmbed yalnız başlıq + thumbnail qaytarır, açıqlama üçün noinnocuous yoxdur
-// Thumbnail-i birbaşa img.youtube.com-dan alırıq
+// YouTube oEmbed + noembed API ilə başlıq, kanal adı, açıqlama çək
 export async function fetchYouTubeData(url) {
   const videoId = extractYouTubeId(url);
   if (!videoId) throw new Error('Düzgün YouTube linki deyil.');
 
-  // oEmbed endpoint — CORS icazəsi var
+  // oEmbed — başlıq + kanal adı qaytarır, CORS icazəsi var
   const oEmbedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
-
   const res = await fetch(oEmbedUrl);
   if (!res.ok) throw new Error('YouTube məlumatı alınmadı. Linki yoxlayın.');
-
   const data = await res.json();
+
+  // noembed.com — açıqlama da qaytarır, CORS var
+  let description = '';
+  try {
+    const noRes = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
+    if (noRes.ok) {
+      const noData = await noRes.json();
+      description = noData.description || '';
+    }
+  } catch { /* açıqlama alınmasa da davam et */ }
 
   return {
     videoId,
-    title:       data.title       || '',
-    author:      data.author_name || '',
-    thumbnail:   getYouTubeThumbnail(videoId),
-    // hqdefault fallback (bəzi videolarda maxresdefault olmur)
+    title:             data.title       || '',
+    author:            data.author_name || '',
+    description,
+    thumbnail:         getYouTubeThumbnail(videoId),
     thumbnailFallback: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-    embedUrl:    `https://www.youtube.com/embed/${videoId}`,
-    watchUrl:    `https://www.youtube.com/watch?v=${videoId}`,
+    embedUrl:          `https://www.youtube.com/embed/${videoId}`,
+    watchUrl:          `https://www.youtube.com/watch?v=${videoId}`,
   };
 }
 
-// Thumbnail-i base64-ə çevir (Firestore-a yükləmək üçün)
+// Thumbnail-i CORS-suz img elementi kimi göstər (base64 çevirmə yox)
+// img.youtube.com CORS header göndərmir — canvas.toDataURL xəta verir
+// Buna görə thumbnail-i birbaşa <img src> ilə göstəririk, Firestore-a URL olaraq saxlayırıq
+export function getThumbnailDisplayUrl(videoId) {
+  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+}
+
+// Thumbnail base64-ə çevirmə cəhdi (yalnız CORS icazəsi olan hallarda işləyir)
 export async function thumbnailToBase64(thumbnailUrl, fallbackUrl) {
   const tryFetch = async (url) => {
-    // CORS proxy olmadan img.youtube.com-dan birbaşa canvas ilə oxu
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
@@ -75,8 +87,9 @@ export async function thumbnailToBase64(thumbnailUrl, fallbackUrl) {
     return await tryFetch(thumbnailUrl);
   } catch {
     if (fallbackUrl) {
-      return await tryFetch(fallbackUrl);
+      try { return await tryFetch(fallbackUrl); } catch {}
     }
-    throw new Error('Thumbnail alınmadı');
+    // CORS xətası — null qaytar, URL ilə göstərəcəyik
+    return null;
   }
 }

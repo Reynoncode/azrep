@@ -40,17 +40,17 @@ export async function renderArtistsSection(containerEl) {
   containerEl.innerHTML = `
     <div class="artists-page">
 
-      <!-- SOL: Son paylaşımlar -->
-      <aside class="artists-sidebar-left">
-        <div class="artists-sidebar-title">SON PAYLAŞIMLAR</div>
-        <div class="artists-recent-list" id="artistsRecentList">
-          ${allPosts.length === 0
-            ? `<div class="artists-empty">Hələ paylaşım yoxdur</div>`
-            : allPosts.map(p => buildRecentPostCard(p)).join('')}
+      <!-- ÜST: Ən çox dinlənilən — navbar kimi horizontal scroll -->
+      <div class="artists-top-bar">
+        <div class="artists-top-bar-label">ƏN ÇOX DİNLƏNİLƏN</div>
+        <div class="artists-top-bar-scroll">
+          ${topArtists.length === 0
+            ? `<div class="artists-empty" style="padding:0 16px">Məlumat yoxdur</div>`
+            : topArtists.map((a, i) => buildTopArtistChip(a, i + 1)).join('')}
         </div>
-      </aside>
+      </div>
 
-      <!-- ORTA: Sənətçi profil kartları -->
+      <!-- ORTA: Sənətçi profil kartları (max 10 görünür, qalanı scroll) -->
       <main class="artists-main">
         <div class="artists-grid" id="artistsGrid">
           ${artists.length === 0
@@ -59,15 +59,15 @@ export async function renderArtistsSection(containerEl) {
         </div>
       </main>
 
-      <!-- SAĞ: Top 10 ən çox dinlənilən -->
-      <aside class="artists-sidebar-right">
-        <div class="artists-sidebar-title">ƏN ÇOX DİNLƏNİLƏN</div>
-        <div class="artists-top-list">
-          ${topArtists.length === 0
-            ? `<div class="artists-empty">Məlumat yoxdur</div>`
-            : topArtists.map((a, i) => buildTopArtistRow(a, i + 1)).join('')}
+      <!-- ALT: Son paylaşımlar (max 5) -->
+      <div class="artists-recent-section">
+        <div class="artists-sidebar-title">SON PAYLAŞIMLAR</div>
+        <div class="artists-recent-list" id="artistsRecentList">
+          ${allPosts.length === 0
+            ? `<div class="artists-empty">Hələ paylaşım yoxdur</div>`
+            : allPosts.map(p => buildRecentPostCard(p)).join('')}
         </div>
-      </aside>
+      </div>
 
     </div>
   `;
@@ -81,7 +81,15 @@ export async function renderArtistsSection(containerEl) {
     });
   });
 
-  // Top artist sətirlərinə click
+  // Top artist chip-lərinə click (yeni top-bar)
+  containerEl.querySelectorAll('.top-artist-chip[data-id]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const id = chip.dataset.id;
+      const artist = artists.find(a => a.id === id);
+      if (artist) openArtistProfile(artist);
+    });
+  });
+  // Top artist sətirlərinə click (köhnə sidebar, fallback)
   containerEl.querySelectorAll('.top-artist-row[data-id]').forEach(row => {
     row.addEventListener('click', () => {
       const id = row.dataset.id;
@@ -165,21 +173,51 @@ export function openArtistProfile(artist) {
 
       <div class="ap-section">
         <div class="ap-section-title">RELİZLƏR</div>
-        <div class="ap-releases-grid" id="apReleasesGrid">
-          <div class="ap-empty-note">Tezliklə…</div>
+        <div class="ap-releases-scroll-wrap">
+          <div class="ap-releases-grid" id="apReleasesGrid">
+            <div class="ap-empty-note">YÜKLƏNİR…</div>
+          </div>
         </div>
       </div>
 
       <div class="ap-section">
         <div class="ap-section-title">XƏBƏRLƏR</div>
         <div class="ap-news-list" id="apNewsList">
-          <div class="ap-empty-note">Tezliklə…</div>
+          <div class="ap-empty-note">YÜKLƏNİR…</div>
         </div>
       </div>
     </div>
   `;
 
   document.getElementById('apBackBtn').addEventListener('click', closeArtistProfile);
+
+  // Sənətçinin relizlərini doldur
+  const artistReleasesGrid = document.getElementById('apReleasesGrid');
+  if (artistReleasesGrid) {
+    const artistReleases = releases.filter(r =>
+      (r.taggedArtists || []).some(a => a.id === artist.id) ||
+      (r.artist || '').toLowerCase() === (artist.name || '').toLowerCase()
+    );
+    if (artistReleases.length === 0) {
+      artistReleasesGrid.innerHTML = `<div class="ap-empty-note">Hələ reliz yoxdur</div>`;
+    } else {
+      artistReleasesGrid.innerHTML = artistReleases.map(r => buildArtistReleaseCard(r)).join('');
+    }
+  }
+
+  // Sənətçinin xəbərlərini doldur
+  const artistNewsList = document.getElementById('apNewsList');
+  if (artistNewsList) {
+    const artistNews = news.filter(n =>
+      (n.taggedArtists || []).some(a => a.id === artist.id)
+    );
+    if (artistNews.length === 0) {
+      artistNewsList.innerHTML = `<div class="ap-empty-note">Hələ xəbər yoxdur</div>`;
+    } else {
+      artistNewsList.innerHTML = artistNews.map(n => buildArtistNewsRow(n)).join('');
+    }
+  }
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -383,6 +421,60 @@ function buildTopArtistRow(a, rank) {
       ${a.spotifyUrl ? `<a class="top-artist-spotify" href="${escHtml(a.spotifyUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Spotify-də aç">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
       </a>` : ''}
+    </div>
+  `;
+}
+
+
+// ============================================================
+// TOP ARTIST CHIP (yeni horizontal navbar üçün)
+// ============================================================
+function buildTopArtistChip(a, rank) {
+  const img = a.photo
+    ? `<img src="${escHtml(a.photo)}" alt="${escHtml(a.name)}" class="top-chip-avatar" />`
+    : `<div class="top-chip-avatar top-chip-avatar-ph">${escHtml((a.name || '?')[0].toUpperCase())}</div>`;
+
+  const rankCls = rank === 1 ? 'top-chip-rank top-chip-rank-1' : 'top-chip-rank';
+  return `
+    <div class="top-artist-chip" data-id="${escHtml(a.id)}">
+      <span class="${rankCls}">${rank}</span>
+      ${img}
+      <span class="top-chip-name">${escHtml(a.name || '')}</span>
+    </div>
+  `;
+}
+
+// ============================================================
+// ARTİST PROFİLİ — Reliz karti (horizontal scroll)
+// ============================================================
+function buildArtistReleaseCard(r) {
+  const thumb = r.thumbnail
+    ? `<img src="${escHtml(r.thumbnail)}" alt="${escHtml(r.title)}" class="ap-rel-thumb" />`
+    : `<div class="ap-rel-thumb ap-rel-nothumb">♪</div>`;
+  const typeLabel = r.releaseType ? `<span class="ap-rel-type">${escHtml(r.releaseType)}</span>` : '';
+  return `
+    <div class="ap-rel-card">
+      <div class="ap-rel-thumb-wrap">${thumb}${typeLabel}</div>
+      <div class="ap-rel-title">${escHtml((r.title || '').slice(0, 32))}${(r.title || '').length > 32 ? '…' : ''}</div>
+      <div class="ap-rel-date">${escHtml(r.date || '')}</div>
+    </div>
+  `;
+}
+
+// ============================================================
+// ARTİST PROFİLİ — Xəbər sətri
+// ============================================================
+function buildArtistNewsRow(n) {
+  const thumb = n.media
+    ? `<img src="${escHtml(n.media)}" alt="" class="ap-news-thumb" />`
+    : `<div class="ap-news-thumb ap-news-nothumb">📰</div>`;
+  return `
+    <div class="ap-news-row">
+      ${thumb}
+      <div class="ap-news-info">
+        <div class="ap-news-title">${escHtml((n.title || '').slice(0, 80))}${(n.title || '').length > 80 ? '…' : ''}</div>
+        <div class="ap-news-date">${escHtml(n.date || '')}</div>
+      </div>
     </div>
   `;
 }

@@ -134,14 +134,22 @@
    SƏNƏTÇİLƏR BÖLÜMİ — Mobil
    ============================================================ */
 @media (max-width: 900px) {
-  .artists-page {
-    grid-template-columns: 1fr;
-  }
-  .artists-main {
-    width: 100%;
-    max-width: 100%;
-    padding: 0 0 24px;
-  }
+  /* Yeni layout artıq flex column-dur, override lazım deyil */
+  .artists-page { flex-direction: column; }
+  .artists-top-bar { height: 48px; }
+  .artists-top-bar-label { font-size: 8px; padding: 0 10px; }
+  .top-artist-chip { padding: 0 10px; gap: 6px; }
+  .top-chip-name { font-size: 10px; }
+  .top-chip-avatar, .top-chip-avatar-ph { width: 26px; height: 26px; }
+
+  /* Grid scroll: telefonda 10 kart görünür */
+  .artists-grid { max-height: calc(10 * 72px); }
+  .artist-card { height: 72px; min-height: 56px; max-height: 72px; }
+
+  /* Recent section: single column */
+  .artists-recent-list { grid-template-columns: 1fr; }
+
+  /* Sidebar-lar artıq yoxdur, köhnə qaydalar */
   .artists-sidebar-left,
   .artists-sidebar-right {
     border-right: none;
@@ -149,9 +157,6 @@
     padding-bottom: 24px;
     margin-bottom: 24px;
     padding-right: 0;
-  }
-  .artists-sidebar-left {
-    display: none;
   }
 }
 

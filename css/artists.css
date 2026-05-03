@@ -13,23 +13,18 @@
   text-transform: uppercase;
 }
 
-/* ── 3-sütunlu əsas layout ── */
+/* ── Yeni layout: üst navbar + orta grid + alt recent ── */
 .artists-page {
-  display: grid;
-  grid-template-columns: 240px 25vw 220px;
+  display: flex;
+  flex-direction: column;
   gap: 0;
   min-height: 600px;
-  align-items: flex-start;
-  justify-content: start;
 }
 
 /* ============================================================
    SOL SİDEBAR — Son paylaşımlar
    ============================================================ */
-.artists-sidebar-left {
-  border-right: 2px solid #0D0D0D;
-  padding: 0 20px 32px 0;
-}
+.artists-sidebar-left { display: none; }
 .artists-sidebar-title {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 9px;
@@ -126,15 +121,18 @@
    ORTA — Sənətçi kartları
    ============================================================ */
 .artists-main {
-  padding: 0 0 32px;
-  width: 25vw;
-  min-width: 220px;
-  max-width: 400px;
+  padding: 0 0 0;
+  width: 100%;
+  max-width: 100%;
 }
 .artists-grid {
   display: flex;
   flex-direction: column;
   gap: 0;
+  max-height: calc(10 * 80px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #E0DDD8 transparent;
 }
 .artists-empty-center {
   font-family: 'Inter', sans-serif;
@@ -205,7 +203,7 @@
   font-family: 'Oswald', sans-serif;
   font-size: clamp(15px, 2.4vh, 21px);
   font-weight: 700;
-  color: #0D0D0D;
+  color: #FF3C00;
   text-transform: uppercase;
   letter-spacing: 1px;
   line-height: 1.1;
@@ -225,10 +223,7 @@
 /* ============================================================
    SAĞ SİDEBAR — Top 10
    ============================================================ */
-.artists-sidebar-right {
-  border-left: 2px solid #0D0D0D;
-  padding: 0 0 32px 20px;
-}
+.artists-sidebar-right { display: none; }
 .artists-top-list {
   display: flex;
   flex-direction: column;
@@ -550,10 +545,20 @@
   color: #333;
   max-width: 680px;
 }
+.ap-releases-scroll-wrap {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #E0DDD8 transparent;
+  padding-bottom: 8px;
+}
+.ap-releases-scroll-wrap::-webkit-scrollbar { height: 4px; }
+.ap-releases-scroll-wrap::-webkit-scrollbar-track { background: transparent; }
+.ap-releases-scroll-wrap::-webkit-scrollbar-thumb { background: #E0DDD8; }
 .ap-releases-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 16px;
+  display: flex;
+  flex-direction: row;
+  gap: 14px;
+  width: max-content;
 }
 .ap-news-list {
   display: flex;
@@ -567,3 +572,230 @@
   letter-spacing: 1px;
   padding: 16px 0;
 }
+
+/* ============================================================
+   YENİ TOP BAR — Horizontal scroll navbar
+   ============================================================ */
+.artists-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-bottom: 2px solid #0D0D0D;
+  border-top: 2px solid #0D0D0D;
+  background: #FAF9F6;
+  height: 52px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.artists-top-bar-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #FF3C00;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 0 16px;
+  border-right: 2px solid #0D0D0D;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.artists-top-bar-scroll {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  height: 100%;
+  flex: 1;
+}
+.artists-top-bar-scroll::-webkit-scrollbar { display: none; }
+
+.top-artist-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  height: 100%;
+  border-right: 1px solid #E0DDD8;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.12s;
+}
+.top-artist-chip:hover { background: #F0EDE8; }
+.top-chip-rank {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #CCC;
+  min-width: 14px;
+}
+.top-chip-rank-1 { color: #FF3C00; }
+.top-chip-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid #0D0D0D;
+  flex-shrink: 0;
+}
+.top-chip-avatar-ph {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  border: 1.5px solid #0D0D0D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.top-chip-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0D0D0D;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================================
+   YENİ RECENT SECTION — Altda yatay layout
+   ============================================================ */
+.artists-recent-section {
+  border-top: 2px solid #0D0D0D;
+  padding: 20px 0 32px;
+}
+.artists-recent-section .artists-sidebar-title {
+  padding: 0 0 14px;
+}
+.artists-recent-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2px;
+}
+
+/* ============================================================
+   ARTİST PROFİLİ — Reliz kartları (horizontal scroll)
+   ============================================================ */
+.ap-rel-card {
+  width: 140px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: default;
+}
+.ap-rel-thumb-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+}
+.ap-rel-thumb {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+  border: 2px solid #0D0D0D;
+}
+.ap-rel-nothumb {
+  width: 140px;
+  height: 140px;
+  background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  border: 2px solid #0D0D0D;
+}
+.ap-rel-type {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: #FF3C00;
+  color: #fff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  text-transform: uppercase;
+}
+.ap-rel-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0D0D0D;
+  line-height: 1.3;
+}
+.ap-rel-date {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: #AAA;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================================
+   ARTİST PROFİLİ — Xəbər sətirləri
+   ============================================================ */
+.ap-news-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #E0DDD8;
+}
+.ap-news-row:last-child { border-bottom: none; }
+.ap-news-thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border: 1.5px solid #0D0D0D;
+  flex-shrink: 0;
+  display: block;
+}
+.ap-news-nothumb {
+  width: 56px;
+  height: 56px;
+  background: #F0EDE8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  border: 1.5px solid #0D0D0D;
+  flex-shrink: 0;
+}
+.ap-news-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.ap-news-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0D0D0D;
+  line-height: 1.3;
+}
+.ap-news-date {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: #AAA;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================================
+   ARTISTS GRID — max 10 visible, rest scroll
+   ============================================================ */
+.artists-grid::-webkit-scrollbar { width: 4px; }
+.artists-grid::-webkit-scrollbar-track { background: transparent; }
+.artists-grid::-webkit-scrollbar-thumb { background: #E0DDD8; }
+

@@ -145,7 +145,7 @@
 
 /* ── Sənətçi kartı (compact) ── */
 .artist-card {
-  border-bottom: 2px solid #0D0D0D;
+  border-bottom: 1px solid #E0DDD8;
   transition: background 0.13s;
   height: 12vh;
   min-height: 64px;
@@ -154,14 +154,14 @@
   align-items: center;
   cursor: pointer;
 }
-.artist-card:first-child { border-top: 2px solid #0D0D0D; }
+.artist-card:first-child { border-top: 1px solid #E0DDD8; }
 .artist-card:hover { background: #F5F2ED; }
 
 .artist-card-inner {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 0 12px;
+  padding: 8px 12px;
   height: 100%;
   width: 100%;
 }
@@ -587,21 +587,6 @@
   overflow: hidden;
   flex-shrink: 0;
 }
-.artists-top-bar-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: #FF3C00;
-  text-transform: uppercase;
-  white-space: nowrap;
-  padding: 0 16px;
-  border-right: 2px solid #0D0D0D;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
 .artists-top-bar-scroll {
   display: flex;
   align-items: center;
@@ -686,33 +671,35 @@
    ARTİST PROFİLİ — Reliz kartları (horizontal scroll)
    ============================================================ */
 .ap-rel-card {
-  width: 140px;
+  width: 180px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  cursor: default;
+  cursor: pointer;
+  transition: opacity 0.15s;
 }
+.ap-rel-card:hover { opacity: 0.8; }
 .ap-rel-thumb-wrap {
   position: relative;
-  width: 140px;
-  height: 140px;
+  width: 180px;
+  height: 180px;
 }
 .ap-rel-thumb {
-  width: 140px;
-  height: 140px;
+  width: 180px;
+  height: 180px;
   object-fit: cover;
   display: block;
   border: 2px solid #0D0D0D;
 }
 .ap-rel-nothumb {
-  width: 140px;
-  height: 140px;
+  width: 180px;
+  height: 180px;
   background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px;
+  font-size: 48px;
   border: 2px solid #0D0D0D;
 }
 .ap-rel-type {

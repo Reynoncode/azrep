@@ -23,7 +23,8 @@
   /* News Grid */
   .news-grid { grid-template-columns: 1fr; gap: 14px; }
   .news-card { aspect-ratio: auto; min-height: 340px; }
-  .news-card-title-overlay h3 { font-size: 18px; }
+  .news-card-bottom { flex: 0 0 110px; }
+  .news-card-title-overlay h3 { font-size: 22px; }
 
   /* Expanded Row */
   .exp-content { padding: 18px 16px 22px; }

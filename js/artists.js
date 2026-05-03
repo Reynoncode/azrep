@@ -42,7 +42,6 @@ export async function renderArtistsSection(containerEl) {
 
       <!-- ÜST: Ən çox dinlənilən — navbar kimi horizontal scroll -->
       <div class="artists-top-bar">
-        <div class="artists-top-bar-label">ƏN ÇOX DİNLƏNİLƏN</div>
         <div class="artists-top-bar-scroll">
           ${topArtists.length === 0
             ? `<div class="artists-empty" style="padding:0 16px">Məlumat yoxdur</div>`
@@ -202,6 +201,16 @@ export function openArtistProfile(artist) {
       artistReleasesGrid.innerHTML = `<div class="ap-empty-note">Hələ reliz yoxdur</div>`;
     } else {
       artistReleasesGrid.innerHTML = artistReleases.map(r => buildArtistReleaseCard(r)).join('');
+      // Reliz kartlarına click — albums bölümünə keç
+      artistReleasesGrid.querySelectorAll('.ap-rel-card[data-id]').forEach(card => {
+        card.addEventListener('click', () => {
+          closeArtistProfile();
+          setTimeout(() => {
+            const navLink = document.querySelector('.nav-link[data-section="albums"]');
+            if (navLink) navLink.click();
+          }, 80);
+        });
+      });
     }
   }
 
@@ -453,7 +462,7 @@ function buildArtistReleaseCard(r) {
     : `<div class="ap-rel-thumb ap-rel-nothumb">♪</div>`;
   const typeLabel = r.releaseType ? `<span class="ap-rel-type">${escHtml(r.releaseType)}</span>` : '';
   return `
-    <div class="ap-rel-card">
+    <div class="ap-rel-card" data-id="${escHtml(r.id)}" data-section="albums">
       <div class="ap-rel-thumb-wrap">${thumb}${typeLabel}</div>
       <div class="ap-rel-title">${escHtml((r.title || '').slice(0, 32))}${(r.title || '').length > 32 ? '…' : ''}</div>
       <div class="ap-rel-date">${escHtml(r.date || '')}</div>

@@ -70,28 +70,14 @@
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 16px;
-  justify-content: center;
   min-width: 0;
 }
-.nav-logo-link {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  color: #FF3C00;
-  text-transform: uppercase;
-  white-space: nowrap;
-  text-decoration: none;
-  flex-shrink: 0;
-}
-.nav-logo-link:hover { opacity: 0.8; }
 
 /* --- SEARCH WRAP --- */
 .nav-search-wrap {
   position: relative;
   flex: 1;
-  max-width: 480px;
+  width: 100%;
 }
 .nav-search-input {
   width: 100%;

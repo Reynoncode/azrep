@@ -2,11 +2,12 @@
 // news.js — Xəbər grid, expanded row, slider, publish
 // ==============================
 
-import { db, collection, getDocs, addDoc, orderBy, query, serverTimestamp } from './firebase.js';
+import { db, collection, getDocs, addDoc, deleteDoc, updateDoc, doc, orderBy, query, serverTimestamp } from './firebase.js';
 import { news, releases, podcasts, setNews, setReleases, setPodcasts, pushRelease, pushPodcast, currentImages, currentVideoFile, activeMediaType, currentSection } from './state.js';
 import { escHtml, compressImage, fileToBase64 } from './utils.js';
 import { closeNewsModal, taggedArtistsByForm } from './ui.js';
 import { loadComments } from './comments.js';
+import { isAdmin } from './auth.js';
 import { renderArtistsSection } from './artists.js';
 import { renderGundemSection } from './gundem.js';
 
@@ -213,6 +214,11 @@ function buildExpandedRelease(item) {
   const row = document.createElement('div');
   row.className     = 'news-expanded-row';
   row.dataset.forId = item.id;
+  const adminControls = isAdmin() ? `
+    <div class="exp-admin-bar">
+      <button class="exp-admin-btn exp-admin-delete" data-id="${item.id}" data-col="releases">🗑 SİL</button>
+    </div>` : '';
+
   row.innerHTML = `
     <div class="exp-row-inner exp-rel-inner">
       <button class="exp-close-row-btn">✕</button>
@@ -233,6 +239,7 @@ function buildExpandedRelease(item) {
             </div>
             <div class="exp-rel-date">${escHtml(item.date || '')}</div>
             ${linkBtns ? `<div class="exp-rel-actions">${linkBtns}</div>` : ''}
+            ${adminControls}
           </div>
         </div>
 
@@ -247,6 +254,7 @@ function buildExpandedRelease(item) {
       </div>
     </div>
   `;
+  attachAdminDeleteBtn(row, item.id, 'releases');
   return row;
 }
 
@@ -339,6 +347,11 @@ function buildExpandedPodcast(item) {
   const row = document.createElement('div');
   row.className     = 'news-expanded-row';
   row.dataset.forId = item.id;
+  const adminControls = isAdmin() ? `
+    <div class="exp-admin-bar">
+      <button class="exp-admin-btn exp-admin-delete" data-id="${item.id}" data-col="podcasts">🗑 SİL</button>
+    </div>` : '';
+
   row.innerHTML = `
     <div class="exp-row-inner">
       <button class="exp-close-row-btn">✕</button>
@@ -348,12 +361,14 @@ function buildExpandedPodcast(item) {
         <h2 class="exp-title">${escHtml(item.title)}</h2>
         <p class="exp-body">${escHtml(item.description || '')}</p>
         <div class="exp-footer"><div class="exp-tags">${tagsHTML}</div>${linkBtn}</div>
+        ${adminControls}
       </div>
       <div class="exp-comments" id="expComments_${item.id}">
         <div class="comments-loading-state">YÜKLƏNİR…</div>
       </div>
     </div>
   `;
+  attachAdminDeleteBtn(row, item.id, 'podcasts');
   loadComments(item.id, row);
   return row;
 }
@@ -418,6 +433,43 @@ function buildNewsCard(item) {
       </div>
     </article>
   `;
+}
+
+
+// ============================================================
+// ADMIN — Sil funksiyası
+// ============================================================
+function attachAdminDeleteBtn(row, itemId, collectionName) {
+  const btn = row.querySelector('.exp-admin-delete');
+  if (!btn) return;
+  btn.addEventListener('click', async e => {
+    e.stopPropagation();
+    const confirmed = confirm('Bu elementi silmək istədiyinizdən əminsiniz?');
+    if (!confirmed) return;
+    btn.disabled = true;
+    btn.textContent = 'SİLİNİR…';
+    try {
+      await deleteDoc(doc(db, collectionName, itemId));
+      // local state-dən çıxar
+      if (collectionName === 'news') {
+        setNews(news.filter(n => n.id !== itemId));
+      } else if (collectionName === 'releases') {
+        setReleases(releases.filter(r => r.id !== itemId));
+      } else if (collectionName === 'podcasts') {
+        setPodcasts(podcasts.filter(p => p.id !== itemId));
+      }
+      // kartı və expanded row-u bağla
+      const card = document.querySelector(`.news-card[data-id="${itemId}"], .release-card[data-id="${itemId}"]`);
+      if (card) card.remove();
+      row.classList.remove('open');
+      setTimeout(() => { if (row.parentNode) row.remove(); }, 400);
+    } catch (err) {
+      console.error('Silmə xətası:', err);
+      alert('Xəta: ' + err.message);
+      btn.disabled = false;
+      btn.textContent = '🗑 SİL';
+    }
+  });
 }
 
 // ============================================================
@@ -495,6 +547,11 @@ function buildExpandedRow(item) {
   const row = document.createElement('div');
   row.className     = 'news-expanded-row';
   row.dataset.forId = item.id;
+  const adminControls = isAdmin() ? `
+    <div class="exp-admin-bar">
+      <button class="exp-admin-btn exp-admin-delete" data-id="${item.id}" data-col="news">🗑 SİL</button>
+    </div>` : '';
+
   row.innerHTML = `
     <div class="exp-row-inner">
       <button class="exp-close-row-btn">✕</button>
@@ -504,12 +561,14 @@ function buildExpandedRow(item) {
         <h2 class="exp-title">${escHtml(item.title)}</h2>
         <p class="exp-body">${escHtml(item.body || '')}</p>
         <div class="exp-footer"><div class="exp-tags">${tagsHTML}</div>${linkBtn}</div>
+        ${adminControls}
       </div>
       <div class="exp-comments" id="expComments_${item.id}">
         <div class="comments-loading-state">YÜKLƏNİR…</div>
       </div>
     </div>
   `;
+  attachAdminDeleteBtn(row, item.id, 'news');
   return row;
 }
 

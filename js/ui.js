@@ -23,26 +23,29 @@ export function setCurrentDate() {
 
 export function initNav() {
   // Nav linklər artıq yoxdur — drawer linklər ui.js initDrawer-da idarə olunur
-  // Logo linki ana səhifəyə aparır
-  const logoLink = document.getElementById('navLogoLink');
-  if (logoLink) {
-    logoLink.addEventListener('click', e => {
-      e.preventDefault();
-      // Sənətçi profili açıqdırsa bağla
-      const profilePage = document.getElementById('artistProfilePage');
-      if (profilePage && profilePage.classList.contains('profile-open')) {
-        const { closeArtistProfile } = window.__artistModule || {};
-        if (closeArtistProfile) { closeArtistProfile(); return; }
-        profilePage.classList.remove('profile-open');
-        const siteMain = document.querySelector('body > main.site-main');
-        const siteFooter = document.querySelector('.site-footer');
-        if (siteMain) siteMain.style.display = '';
-        if (siteFooter) siteFooter.style.display = '';
-      }
-      setCurrentSection('home');
-      renderView();
-    });
+  // Home düyməsi ana səhifəyə aparır (əvvəlki logo funksiyası)
+  function goHome(e) {
+    if (e) e.preventDefault();
+    const profilePage = document.getElementById('artistProfilePage');
+    if (profilePage && profilePage.classList.contains('profile-open')) {
+      const { closeArtistProfile } = window.__artistModule || {};
+      if (closeArtistProfile) { closeArtistProfile(); return; }
+      profilePage.classList.remove('profile-open');
+      const siteMain = document.querySelector('body > main.site-main');
+      const siteFooter = document.querySelector('.site-footer');
+      if (siteMain) siteMain.style.display = '';
+      if (siteFooter) siteFooter.style.display = '';
+    }
+    setCurrentSection('home');
+    renderView();
   }
+
+  const navHomeBtn = document.getElementById('navHomeBtn');
+  if (navHomeBtn) navHomeBtn.addEventListener('click', goHome);
+
+  // Köhnə logo linki hələ də varsa (fallback)
+  const logoLink = document.getElementById('navLogoLink');
+  if (logoLink) logoLink.addEventListener('click', goHome);
 }
 
 export function initTicker() {

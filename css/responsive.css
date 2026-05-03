@@ -21,9 +21,12 @@
   .feature-title { font-size: 38px; }
 
   /* News Grid */
-  .news-grid { grid-template-columns: 1fr; gap: 14px; }
-  .news-card { aspect-ratio: auto; min-height: 340px; }
-  .news-card-bottom { flex: 0 0 110px; }
+  .news-grid { grid-template-columns: 1fr; gap: 12px; }
+  .home-news-grid { grid-template-columns: 1fr; gap: 12px; }
+  .home-podcast-grid { grid-template-columns: 1fr; gap: 12px; }
+  .news-card { height: auto; }
+  .news-card-top { flex: 0 0 176px; }
+  .news-card-bottom { flex: 0 0 165px; }
   .news-card-title-overlay h3 { font-size: 22px; }
 
   /* Expanded Row */

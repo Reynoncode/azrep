@@ -640,3 +640,38 @@
 }
 .release-type-btn:hover { border-color: #0D0D0D; color: #0D0D0D; }
 .release-type-btn.active { background: #FF3C00; border-color: #FF3C00; color: #fff; }
+
+/* ============================================================
+   ADMİN SİLMƏ BAR — Expanded row-da
+   ============================================================ */
+.exp-admin-bar {
+  display: flex;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #E0DDD8;
+  margin-top: 8px;
+}
+.exp-admin-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 8px 16px;
+  border: 2px solid;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background 0.15s, color 0.15s;
+}
+.exp-admin-delete {
+  background: transparent;
+  color: #cc2200;
+  border-color: #cc2200;
+}
+.exp-admin-delete:hover {
+  background: #cc2200;
+  color: #fff;
+}
+.exp-admin-delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
